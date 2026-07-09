@@ -73,6 +73,15 @@ Each entry: **symptom → cause → fix → takeaway.**
 - **Fix:** upcast the residual for the projection — `h = storage["h"][0].detach().cpu().float()` in `workspace_activation`. No-op on CPU (already float32); on GPU it makes the projection float32 to match the vectors. (`baselines.py`'s logit-lens was safe: it goes through `model.model.norm`/`model.lm_head`, bf16-consistent model ops, no manual float matmul.)
 - **Takeaway:** **CPU float32 tests do not exercise dtype bugs that only bite in bf16 on GPU.** Any manual tensor op (matmul, einsum) that mixes a model activation with a precomputed constant must reconcile dtypes explicitly. Running the cheap **1.5B GPU smoke first** caught this *before* the expensive 14B download — keep that guard.
 
+### 12. **The second GPU bug:** `torch.OutOfMemoryError` on the 14B (48GB card)
+- **Symptom:** the 14B downloaded fine (31 GB cache) but crashed at `jspace/jlens.py:38`, `s.backward()` in `jlens_vectors`: `CUDA out of memory ... 44.42 GiB total, 19 MiB free`.
+- **Cause:** NOT activation size. The model parameters require grad by default, so `backward()` allocates a **full model-sized gradient buffer** (~28 GB for the 14B) *on top of* the 28 GB of weights → ~56 GB needed on a 44 GB card. But the targeted J-lens only needs the gradient w.r.t. **one activation**, not the parameters.
+- **Fix (two parts):**
+  1. `for p in model.parameters(): p.requires_grad_(False)` in `jlens_vectors` — no parameter-gradient buffer is ever allocated.
+  2. Re-root the autograd graph at the captured activation: in the hook, `h.requires_grad_(True); h.retain_grad()` (only on the grad path). With params frozen, layers 0..L build no graph; the graph exists only for L..final, and `backward()` fills just `h.grad`. Peak drops ~56 GB → ~29 GB.
+  - Also added `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` as a fragmentation guard (secondary).
+- **Takeaway:** when you want a gradient **w.r.t. an activation, not the weights**, freeze the weights first — otherwise `backward()` silently allocates a model-sized grad buffer and OOMs. (`torch.autograd.grad(s, h)` is the other idiom, but freezing + `retain_grad` was the minimal change here.) This, too, only bites at 14B scale: the 1.5B's 28 GB→3 GB param-grad buffer fit fine, so CPU/1.5B tests never caught it.
+
 ---
 
 ## Carry-forward methodological notes (from earlier tasks)

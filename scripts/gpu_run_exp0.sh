@@ -13,6 +13,11 @@
 #   HF_TOKEN=...      only needed if a model is gated (these deepseek distills are public)
 set -euo pipefail
 
+# Reduce CUDA allocator fragmentation (belt-and-suspenders for the 14B on a 48GB card;
+# the real memory win is freezing params in jlens_vectors so backward allocates no
+# parameter-gradient buffer).
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+
 MODEL_14B="${MODEL_14B:-deepseek-ai/DeepSeek-R1-Distill-Qwen-14B}"
 MODEL_SMOKE="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 
