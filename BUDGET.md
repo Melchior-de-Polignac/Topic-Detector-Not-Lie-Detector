@@ -5,6 +5,7 @@ Target total for the project: ~$40–70.
 | Date | Activity | GPU/API | Est. $ | Actual $ | Running total |
 |------|----------|---------|--------|----------|---------------|
 | 2026-07-09 | (planning) | — | 0 | 0 | 0.00 |
+| _pending_ | Task 3 exp0 gate (14B on 48GB vast.ai, ~1.5 hr) | vast.ai 48GB @ $0.40–0.80/hr | 0.60–1.20 | — | 0.00 |
 
 ## Rules
 - Add a row with the ESTIMATE before starting any paid session.
