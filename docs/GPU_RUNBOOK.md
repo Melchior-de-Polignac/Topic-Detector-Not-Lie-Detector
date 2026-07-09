@@ -3,6 +3,47 @@
 Everything is coded and CPU-verified. This runs the one decisive experiment (exp0) on the
 14B. Budget: **~$0.60–1.20** of GPU time. Nothing else in the plan runs here yet.
 
+---
+
+## ✅ WHAT WE ACTUALLY USED (Task 3 gate, 2026-07-09) — reference config
+
+The gate ran successfully on this exact setup. Reuse it for Task 5/8 GPU runs.
+
+- **Provider:** RunPod, **Community Cloud** (cheapest).
+- **GPU:** **NVIDIA A40, 48 GB** (~$0.40/hr). 44 GB usable — enough for the 14B (see OOM note).
+- **Template:** **"RunPod PyTorch 2.x"** → shipped **torch 2.4.1+cu124**, Python 3.11. The
+  launch script never reinstalls torch, only adds `transformers>=5,<6 accelerate numpy`.
+- **Disk:** container `/` is only **20 GB — too small for the 28 GB model.** RunPod mounts a
+  huge volume at **`/workspace`** (TBs). We put everything there and set
+  **`HF_HOME=/workspace/hf`** so the download never touches `/`. (Also `PIP_CACHE_DIR=/workspace/pipcache`.)
+- **Cost:** ~$0.30 total, ~30 min incl. two debug re-runs (model cached after the first).
+
+### Driving the pod over SSH (proxy quirks — important)
+RunPod's proxy endpoint is `ssh <podid>-<keyid>@ssh.runpod.io -i <key>`. It is **interactive-only**:
+- It **requires a PTY** → always use `ssh -tt` (plain `ssh host 'cmd'` fails: "doesn't support PTY").
+- It **ignores a command passed as an argument** → feed commands via **stdin** (heredoc piped in).
+- Because the PTY **echoes** stdin, never grep the transcript for a token that also appears in the
+  command you sent — put remote logic in a script file (`/workspace/poll.sh`) and match an
+  output-only sentinel.
+- Add the driving pubkey to the pod's `~/.ssh/authorized_keys` (keys inject only at pod-create;
+  use a throwaway keypair — never share a real private key).
+
+### Getting code onto a PRIVATE repo's pod without a token
+The run needs only ~7 KB of code. We `tar | base64`'d it, piped it over the SSH channel into
+`base64 -d > payload.tgz`, and **verified `sha256sum` on both ends** before untarring. Pulling
+`validation.json` back the same way risks PTY-escape corruption — reconstruct from a clean single-
+`cat` capture and confirm the sha matches. No GitHub token ever touched the pod.
+
+### The two GPU-only bugs we hit (both fixed in-repo; see `docs/LESSONS.md` #11–12)
+1. **bf16 vs float32** in `workspace_activation` (`h @ vn`) — model runs bf16 on GPU, readout
+   vectors are float32. Fixed: upcast `h` to `.float()`.
+2. **CUDA OOM** in `jlens_vectors` — `backward()` allocated a ~28 GB *parameter*-gradient buffer
+   we don't need. Fixed: freeze all params + re-root the graph at the captured activation.
+   Both were invisible to CPU/1.5B tests; the cheap **1.5B-GPU-smoke-first** step caught them
+   before the expensive 14B download. Keep that guard.
+
+---
+
 ## What you're renting
 - **One GPU with ≥40 GB VRAM.** The 14B in bf16 is ~28 GB.
 - **~1.5 hours** wall-clock, most of it the ~30 GB model download. You pay by the minute,
