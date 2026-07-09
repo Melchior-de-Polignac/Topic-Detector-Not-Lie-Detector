@@ -4,11 +4,24 @@ Everything is coded and CPU-verified. This runs the one decisive experiment (exp
 14B. Budget: **~$0.60–1.20** of GPU time. Nothing else in the plan runs here yet.
 
 ## What you're renting
-- **One GPU with ≥40 GB VRAM** (48 GB A6000 / A40 is ideal). The 14B in bf16 is ~28 GB.
+- **One GPU with ≥40 GB VRAM.** The 14B in bf16 is ~28 GB.
 - **~1.5 hours** wall-clock, most of it the ~30 GB model download. You pay by the minute,
   so **destroy the instance the moment `validation.json` is downloaded.**
+- Either provider works — the on-box steps are identical. Pick one:
 
-## Rent it on vast.ai (cheapest path)
+| Provider | GPU | Rate | ~1.5 hr | Notes |
+|----------|-----|------|---------|-------|
+| **DeepInfra GPU instances** (recommended) | A100 80 GB | $0.89/hr | ~$1.34 | Same account we already use; 80 GB headroom for later LoRA/Heretic tasks. **Not** the per-token API key — use the *GPU instances* product. |
+| vast.ai | 48 GB A6000/A40 | $0.40–0.80/hr | $0.60–1.20 | A few dimes cheaper; less VRAM. |
+
+## Option A — DeepInfra GPU instance (recommended)
+1. Log in at https://deepinfra.com → **GPU Instances** (dashboard → "Deploy" / "GPU
+   Instances"). This is separate from the per-token API your `DEEPINFRA_API_KEY` is for.
+2. Configure: GPU = **A100 80GB**, base image = a **PyTorch** image, name the container.
+3. Deploy → copy the **one-line SSH command** it gives you, paste into your terminal.
+4. Jump to **On the box** below. Kill the instance from the dashboard when done.
+
+## Option B — vast.ai
 1. Sign up at https://vast.ai, add ~$5 credit (min top-up; leaves headroom).
 2. **Client → Search.** Set filters:
    - GPU RAM: **≥ 48 GB** (or single-GPU ≥ 40 GB)
