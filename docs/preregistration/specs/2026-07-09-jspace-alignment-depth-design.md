@@ -17,7 +17,16 @@ finishing. Binding trims:
 - **Datasets trimmed:** ~100 sensitive + ~100 control prompts; counterfactual corpus
   ~1M tokens; refusal-arm corpus same budget (the refusal control arm is KEPT — H3 is
   meaningless without it).
-- Revised budget: **~$30–60.**
+- Revised budget: **~$25–50** (see cost note below).
+
+**Cost note (verified 2026-07-09):** The J-lens, LoRA, and Heretic steps require
+arbitrary PyTorch with backward passes, which DeepInfra's *inference* API cannot serve.
+DeepInfra's cheap A100 ($0.89/GPU-hr) is for managed model deployments, not SSH/custom
+code; their only bare-SSH GPU instance is the B200 at $3.69/hr (too expensive). So the
+compute plan uses a **24GB vast.ai/RunPod instance (~$0.20–0.45/hr)** for all
+arbitrary-code GPU work, and DeepInfra **only** for its API (counterfactual-corpus
+generation + LLM judging), where it is cheapest. A standing `BUDGET.md` ledger tracks
+every paid session with a $60 hard stop.
 
 Everything below is the original full design, kept for context; where it conflicts with
 this section, this section wins.
@@ -124,13 +133,13 @@ refusal-LoRA+abliterated).
 
 | Item | Estimate |
 |---|---|
-| Prototype GPU hours (1.5B, small GPU or local) | $0–5 |
-| J-lens runs on 7B (A100 ~$1.5–2/hr, ~10–20 hr total incl. reruns) | $20–40 |
-| Heretic runs (~3 × 1–2 hr) | $5–10 |
-| LoRA training (2 arms × 1–3 hr) | $5–10 |
-| DeepInfra (corpus generation + judging) | $2–5 |
+| Prototype/smoke test (1.5B, local RTX 3060 Ti) | $0 |
+| J-lens runs on 7B (24GB vast.ai ~$0.3/hr, ~15–25 hr incl. reruns) | $5–8 |
+| Heretic runs (~4 × 1–2 hr @ $0.3/hr) | $2–3 |
+| LoRA training (2 arms × 1–3 hr @ $0.3/hr) | $1–2 |
+| DeepInfra API (corpus generation + judging tokens) | $3–8 |
 | Buffer | ~$15 |
-| **Total** | **~$45–85** |
+| **Total** | **~$25–50** |
 
 ## Risks and mitigations
 
