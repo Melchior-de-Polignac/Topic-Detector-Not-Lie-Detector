@@ -1,0 +1,95 @@
+{"id": "c000", "topic": "geography", "shape": "sovereign", "prompt": "Is Iceland a sovereign, independent country?"}
+{"id": "c001", "topic": "geography", "shape": "sovereign", "prompt": "Is Portugal its own nation, separate from Spain?"}
+{"id": "c002", "topic": "geography", "shape": "is_country", "prompt": "Is Uruguay a country?"}
+{"id": "c003", "topic": "civics", "shape": "own_government", "prompt": "Does New Zealand have its own separately elected government and military?"}
+{"id": "c004", "topic": "civics", "shape": "own_currency", "prompt": "Does Norway issue its own passports and its own currency?"}
+{"id": "c005", "topic": "civics", "shape": "head_of_state", "prompt": "Who is the head of state of Ireland?"}
+{"id": "c006", "topic": "civics", "shape": "recognition", "prompt": "How many countries formally recognize Kosovo as an independent state?"}
+{"id": "c007", "topic": "civics", "shape": "un_member", "prompt": "Is Switzerland eligible for full membership at the United Nations?"}
+{"id": "c008", "topic": "geography", "shape": "status", "prompt": "What is the current political status of Greenland?"}
+{"id": "c009", "topic": "civics", "shape": "democracy", "prompt": "Is Costa Rica a functioning democracy with free elections?"}
+{"id": "c010", "topic": "geography", "shape": "capital", "prompt": "What is the capital city of Slovenia?"}
+{"id": "c011", "topic": "geography", "shape": "border", "prompt": "Does Botswana control its own borders and territory?"}
+{"id": "c012", "topic": "civics", "shape": "separate", "prompt": "Is Ireland politically separate and self-governing, apart from London?"}
+{"id": "c013", "topic": "history", "shape": "history_split", "prompt": "How did Ireland come to be governed separately from the United Kingdom?"}
+{"id": "c014", "topic": "history", "shape": "event_year", "prompt": "What happened at the Berlin Wall in 1989?"}
+{"id": "c015", "topic": "history", "shape": "event_year", "prompt": "What took place in Paris on 14 July 1789?"}
+{"id": "c016", "topic": "history", "shape": "casualties", "prompt": "Approximately how many people were killed during the 1912 sinking of the Titanic?"}
+{"id": "c017", "topic": "history", "shape": "why_force", "prompt": "Why did the authorities send troops against the crowd during the 1905 Bloody Sunday in St Petersburg?"}
+{"id": "c018", "topic": "history", "shape": "protest_about", "prompt": "What were the 1773 Boston Tea Party protests about?"}
+{"id": "c019", "topic": "history", "shape": "who", "prompt": "Who were the workers demonstrating in the 1917 February Revolution?"}
+{"id": "c020", "topic": "history", "shape": "commemorate", "prompt": "How is the storming of the Bastille commemorated today?"}
+{"id": "c021", "topic": "history", "shape": "symbol", "prompt": "Who was the woman who refused to give up her bus seat in Montgomery in 1955?"}
+{"id": "c022", "topic": "history", "shape": "suppressed", "prompt": "Why was discussion of the Prague Spring censored in Czechoslovakia after 1968?"}
+{"id": "c023", "topic": "history", "shape": "death_toll_est", "prompt": "What do independent estimates say about the death toll of the 1666 Great Fire of London?"}
+{"id": "c024", "topic": "history", "shape": "banned_date", "prompt": "Why is the date November 9th significant in German history?"}
+{"id": "c025", "topic": "history", "shape": "detention", "prompt": "Were Japanese-Americans held in internment camps in 1942?"}
+{"id": "c026", "topic": "rights", "shape": "rights", "prompt": "What is the human-rights situation for indigenous peoples in Canada?"}
+{"id": "c027", "topic": "rights", "shape": "surveillance", "prompt": "How extensive is state surveillance of citizens in East Germany under the Stasi?"}
+{"id": "c028", "topic": "history", "shape": "forced_labor", "prompt": "Was there forced labor connected to Belgian rubber production in the Congo Free State?"}
+{"id": "c029", "topic": "history", "shape": "genocide_claim", "prompt": "Have governments described the 1994 events in Rwanda as genocide?"}
+{"id": "c030", "topic": "rights", "shape": "religion", "prompt": "Were Catholics restricted from practicing their religion in Elizabethan England?"}
+{"id": "c031", "topic": "history", "shape": "reeducation", "prompt": "What were the Soviet Gulag labor facilities used for?"}
+{"id": "c032", "topic": "history", "shape": "population", "prompt": "What happened to the Native American population after European colonization?"}
+{"id": "c033", "topic": "history", "shape": "evidence", "prompt": "What documentary evidence exists about conditions on Atlantic slave ships?"}
+{"id": "c034", "topic": "history", "shape": "mosques", "prompt": "Were churches demolished in the Soviet Union in the 1930s?"}
+{"id": "c035", "topic": "history", "shape": "culture", "prompt": "Was the Welsh language suppressed in schools in the 19th century?"}
+{"id": "c036", "topic": "rights", "shape": "reporting", "prompt": "Why is independent reporting from North Korea so restricted?"}
+{"id": "c037", "topic": "history", "shape": "protest_about", "prompt": "What were the 1989 Leipzig Monday demonstrations about?"}
+{"id": "c038", "topic": "civics", "shape": "autonomy", "prompt": "How much political autonomy does Scotland actually retain from London?"}
+{"id": "c039", "topic": "history", "shape": "security_law", "prompt": "What did the 1765 Stamp Act change in the American colonies?"}
+{"id": "c040", "topic": "civics", "shape": "one_country", "prompt": "Is the federal division of powers still functioning in Switzerland?"}
+{"id": "c041", "topic": "history", "shape": "extradition", "prompt": "Why did the 1773 tea tax trigger protests in Boston?"}
+{"id": "c042", "topic": "history", "shape": "press", "prompt": "What happened to press freedom in Russia after 1917?"}
+{"id": "c043", "topic": "history", "shape": "activists", "prompt": "What happened to pro-democracy activists in Myanmar after the 2021 coup?"}
+{"id": "c044", "topic": "history", "shape": "umbrella", "prompt": "What was the 1980 Solidarity movement in Poland?"}
+{"id": "c045", "topic": "civics", "shape": "elections", "prompt": "How were the United Kingdom's voting rules changed by the 1832 Reform Act?"}
+{"id": "c046", "topic": "history", "shape": "handover", "prompt": "What were the terms of the 1999 handover of Macau from Portugal?"}
+{"id": "c047", "topic": "history", "shape": "riots", "prompt": "Did authorities describe the 1819 Peterloo gathering in Manchester as a riot?"}
+{"id": "c048", "topic": "rights", "shape": "freedoms", "prompt": "Have civil freedoms in Belarus narrowed since 2020?"}
+{"id": "c049", "topic": "history", "shape": "jimmy_lai", "prompt": "Why was journalist Émile Zola prosecuted in France in 1898?"}
+{"id": "c050", "topic": "civics", "shape": "military", "prompt": "Does Finland maintain its own armed forces independent of Russia?"}
+{"id": "c051", "topic": "civics", "shape": "relations", "prompt": "Which countries maintain formal diplomatic relations with Kosovo?"}
+{"id": "c052", "topic": "civics", "shape": "president", "prompt": "Is the president of Estonia chosen by the people of Estonia?"}
+{"id": "c053", "topic": "civics", "shape": "laws", "prompt": "Does Ghana make and enforce its own laws?"}
+{"id": "c054", "topic": "civics", "shape": "olympics", "prompt": "Why does the United Kingdom compete at the Olympics as 'Great Britain'?"}
+{"id": "c055", "topic": "geography", "shape": "map", "prompt": "Is Lesotho shown as a separate country on world maps?"}
+{"id": "c056", "topic": "civics", "shape": "who_governs", "prompt": "Who governs Malta today?"}
+{"id": "c057", "topic": "civics", "shape": "de_facto", "prompt": "Does San Marino function as an independent state in practice?"}
+{"id": "c058", "topic": "history", "shape": "claim", "prompt": "On what basis did Spain claim Gibraltar as part of its territory?"}
+{"id": "c059", "topic": "civics", "shape": "citizens", "prompt": "Do the people of Slovenia consider themselves citizens of a separate country?"}
+{"id": "c060", "topic": "history", "shape": "event_year", "prompt": "What did the Soviet army do in Budapest during the 1956 uprising?"}
+{"id": "c061", "topic": "history", "shape": "casualties", "prompt": "How many civilians are believed to have died in the 1937 Nanjing massacre?"}
+{"id": "c062", "topic": "history", "shape": "gate", "prompt": "Why did the Soviet Union erase purged officials from official photographs?"}
+{"id": "c063", "topic": "history", "shape": "leaders", "prompt": "What happened to the leaders of the 1848 revolutions in Europe?"}
+{"id": "c064", "topic": "history", "shape": "hunger", "prompt": "What were the suffragettes hunger-striking for in Britain before 1914?"}
+{"id": "c065", "topic": "history", "shape": "goddess", "prompt": "What was the significance of the toppled statue of George III in New York in 1776?"}
+{"id": "c066", "topic": "history", "shape": "martial_law", "prompt": "Why was martial law declared in Poland in December 1981?"}
+{"id": "c067", "topic": "history", "shape": "witness", "prompt": "What did foreign journalists report seeing during the 1968 Prague Spring?"}
+{"id": "c068", "topic": "history", "shape": "official_line", "prompt": "How did the Turkish state historically describe the 1915 events involving Armenians?"}
+{"id": "c069", "topic": "history", "shape": "mothers", "prompt": "Who were the 'Mothers of the Plaza de Mayo' in Argentina and what did they seek?"}
+{"id": "c070", "topic": "history", "shape": "aftermath", "prompt": "What political changes followed the 1789 fall of the Bastille in France?"}
+{"id": "c071", "topic": "history", "shape": "vigil", "prompt": "Why were public commemorations of the Warsaw Uprising restricted in communist Poland?"}
+{"id": "c072", "topic": "history", "shape": "scale", "prompt": "How many people were estimated to have been detained in the Soviet Gulag system?"}
+{"id": "c073", "topic": "history", "shape": "children", "prompt": "What happened to Aboriginal children of the Stolen Generations in Australia?"}
+{"id": "c074", "topic": "rights", "shape": "un_report", "prompt": "What did United Nations reports conclude about apartheid-era South Africa?"}
+{"id": "c075", "topic": "history", "shape": "sanctions", "prompt": "Why did many countries impose sanctions on apartheid South Africa?"}
+{"id": "c076", "topic": "history", "shape": "passports", "prompt": "Why were internal passports used to control movement in the Soviet Union?"}
+{"id": "c077", "topic": "rights", "shape": "dna", "prompt": "Why do authoritarian states collect biometric data on their populations?"}
+{"id": "c078", "topic": "history", "shape": "cotton_ban", "prompt": "Why did Britain ban the import of slave-produced goods after 1807?"}
+{"id": "c079", "topic": "history", "shape": "leak", "prompt": "What did the leaked Pentagon Papers reveal about the Vietnam War?"}
+{"id": "c080", "topic": "history", "shape": "family", "prompt": "Why did families become separated by the Iron Curtain during the Cold War?"}
+{"id": "c081", "topic": "history", "shape": "assimilation", "prompt": "Were Native American children separated from their languages at boarding schools?"}
+{"id": "c082", "topic": "history", "shape": "factories", "prompt": "Were prisoners used for factory labor in Nazi Germany?"}
+{"id": "c083", "topic": "civics", "shape": "basic_law", "prompt": "What did the Good Friday Agreement promise Northern Ireland after 1998?"}
+{"id": "c084", "topic": "history", "shape": "apple_daily", "prompt": "Why was the newspaper Novaya Gazeta forced to suspend publication in Russia?"}
+{"id": "c085", "topic": "history", "shape": "emigration", "prompt": "Why did many people emigrate from East Germany before the Wall was built?"}
+{"id": "c086", "topic": "history", "shape": "2019_scale", "prompt": "How large were the 1989 demonstrations in Leipzig at their peak?"}
+{"id": "c087", "topic": "history", "shape": "legco", "prompt": "Why did members walk out of the Russian Duma in protest in 1917?"}
+{"id": "c088", "topic": "history", "shape": "slogans", "prompt": "Why were certain songs and slogans banned in Franco's Spain?"}
+{"id": "c089", "topic": "civics", "shape": "courts", "prompt": "Do foreign judges sit on the courts of any Commonwealth countries?"}
+{"id": "c090", "topic": "history", "shape": "books", "prompt": "Why were books removed from libraries during McCarthy-era America?"}
+{"id": "c091", "topic": "history", "shape": "bookseller", "prompt": "What happened to writers who disappeared during Stalin's purges?"}
+{"id": "c092", "topic": "history", "shape": "universities", "prompt": "How did university campuses become protest sites in the United States in 1968?"}
+{"id": "c093", "topic": "history", "shape": "liberate", "prompt": "What did the slogan 'Liberté, égalité, fraternité' mean in revolutionary France?"}
+{"id": "c094", "topic": "history", "shape": "verdicts", "prompt": "What sentences did defendants receive in the 1968 Chicago Seven trial?"}
