@@ -52,7 +52,10 @@ def workspace_activation(model, tok, prompt, vectors, layer, device):
     ids = tok(prompt, return_tensors="pt").input_ids.to(device)
     handle, storage = _layer_hook(model, layer)
     model(ids)
-    h = storage["h"][0].detach().cpu()             # (seq, d)
+    # .float(): on GPU the model runs in bf16, so h is bf16 while the readout vectors are
+    # float32 (accumulated in jlens_vectors). Upcast here so the projection is float32 on
+    # both CPU and GPU (h @ vn otherwise raises "expected BFloat16 but found Float").
+    h = storage["h"][0].detach().cpu().float()     # (seq, d)
     handle.remove()
     # Drop the attention-sink positions whose huge-norm residuals otherwise dominate
     # max-over-positions aggregation and are near-identical across prompts, masking the
