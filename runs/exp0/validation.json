@@ -1,0 +1,242 @@
+{
+  "summary": {
+    "model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+    "layer": 24,
+    "n_concepts": 19,
+    "white_bear_ordering_count": 14,
+    "suppress_gt_control_count": 18,
+    "mean_jlens_suppress_minus_control": 3.788792428217436,
+    "mean_logit_suppress_minus_control": 0.5430619089226973,
+    "jlens_beats_logit_on_suppression_gap": true
+  },
+  "per_concept": {
+    "bear": {
+      "jlens": {
+        "think": 7.463407039642334,
+        "suppress": 6.636641502380371,
+        "control": 6.35438871383667
+      },
+      "logit_lens": {
+        "think": 3.875,
+        "suppress": 3.0,
+        "control": 4.5625
+      }
+    },
+    "elephant": {
+      "jlens": {
+        "think": 8.446650505065918,
+        "suppress": 7.290528297424316,
+        "control": 4.490043640136719
+      },
+      "logit_lens": {
+        "think": 2.0625,
+        "suppress": 1.7734375,
+        "control": 1.75
+      }
+    },
+    "ocean": {
+      "jlens": {
+        "think": 9.422751426696777,
+        "suppress": 7.191184043884277,
+        "control": 3.1262943744659424
+      },
+      "logit_lens": {
+        "think": 5.96875,
+        "suppress": 4.25,
+        "control": 4.6875
+      }
+    },
+    "mountain": {
+      "jlens": {
+        "think": 8.761459350585938,
+        "suppress": 8.85063362121582,
+        "control": 2.1380295753479004
+      },
+      "logit_lens": {
+        "think": 3.34375,
+        "suppress": 3.125,
+        "control": 1.75
+      }
+    },
+    "tiger": {
+      "jlens": {
+        "think": 4.539125442504883,
+        "suppress": 4.482067584991455,
+        "control": 3.6447465419769287
+      },
+      "logit_lens": {
+        "think": 1.453125,
+        "suppress": 0.53125,
+        "control": 1.40625
+      }
+    },
+    "river": {
+      "jlens": {
+        "think": 11.483057022094727,
+        "suppress": 11.019099235534668,
+        "control": 3.8106038570404053
+      },
+      "logit_lens": {
+        "think": 5.5625,
+        "suppress": 5.4375,
+        "control": 1.6953125
+      }
+    },
+    "forest": {
+      "jlens": {
+        "think": 10.072884559631348,
+        "suppress": 8.037753105163574,
+        "control": 3.758253574371338
+      },
+      "logit_lens": {
+        "think": 5.625,
+        "suppress": 4.40625,
+        "control": 5.375
+      }
+    },
+    "desert": {
+      "jlens": {
+        "think": 7.370988845825195,
+        "suppress": 7.295641899108887,
+        "control": 1.595034122467041
+      },
+      "logit_lens": {
+        "think": 6.21875,
+        "suppress": 3.953125,
+        "control": 3.71875
+      }
+    },
+    "castle": {
+      "jlens": {
+        "think": 8.521327018737793,
+        "suppress": 7.290467739105225,
+        "control": 2.1126298904418945
+      },
+      "logit_lens": {
+        "think": 2.796875,
+        "suppress": 2.71875,
+        "control": 0.01385498046875
+      }
+    },
+    "dragon": {
+      "jlens": {
+        "think": 8.45839786529541,
+        "suppress": 7.54667329788208,
+        "control": 4.052237033843994
+      },
+      "logit_lens": {
+        "think": 3.671875,
+        "suppress": 3.6875,
+        "control": 3.34375
+      }
+    },
+    "piano": {
+      "jlens": {
+        "think": 10.0986967086792,
+        "suppress": 10.754997253417969,
+        "control": 5.162911891937256
+      },
+      "logit_lens": {
+        "think": 3.921875,
+        "suppress": 3.578125,
+        "control": 3.296875
+      }
+    },
+    "guitar": {
+      "jlens": {
+        "think": 10.555488586425781,
+        "suppress": 9.04132080078125,
+        "control": 2.464160203933716
+      },
+      "logit_lens": {
+        "think": 2.4375,
+        "suppress": 1.8671875,
+        "control": 1.9453125
+      }
+    },
+    "rocket": {
+      "jlens": {
+        "think": 10.554945945739746,
+        "suppress": 7.047911643981934,
+        "control": 3.954756021499634
+      },
+      "logit_lens": {
+        "think": 5.46875,
+        "suppress": 3.703125,
+        "control": 2.3125
+      }
+    },
+    "planet": {
+      "jlens": {
+        "think": 10.342639923095703,
+        "suppress": 10.634042739868164,
+        "control": 6.684444427490234
+      },
+      "logit_lens": {
+        "think": 6.96875,
+        "suppress": 7.5,
+        "control": 1.796875
+      }
+    },
+    "volcano": {
+      "jlens": {
+        "think": 3.794934034347534,
+        "suppress": 4.653650760650635,
+        "control": 1.2877861261367798
+      },
+      "logit_lens": {
+        "think": 1.234375,
+        "suppress": 1.203125,
+        "control": 1.953125
+      }
+    },
+    "island": {
+      "jlens": {
+        "think": 9.822406768798828,
+        "suppress": 7.837348461151123,
+        "control": 2.1688907146453857
+      },
+      "logit_lens": {
+        "think": 6.5,
+        "suppress": 4.15625,
+        "control": 2.375
+      }
+    },
+    "diamond": {
+      "jlens": {
+        "think": 8.5272855758667,
+        "suppress": 7.670277118682861,
+        "control": 6.410453796386719
+      },
+      "logit_lens": {
+        "think": 6.4375,
+        "suppress": 6.1875,
+        "control": 6.34375
+      }
+    },
+    "wolf": {
+      "jlens": {
+        "think": 5.2011003494262695,
+        "suppress": 4.543697834014893,
+        "control": 2.5288431644439697
+      },
+      "logit_lens": {
+        "think": -0.2197265625,
+        "suppress": -0.73828125,
+        "control": 0.34765625
+      }
+    },
+    "eagle": {
+      "jlens": {
+        "think": 1.9101958274841309,
+        "suppress": 1.7073711156845093,
+        "control": 1.7997442483901978
+      },
+      "logit_lens": {
+        "think": 0.8828125,
+        "suppress": 0.47265625,
+        "control": 1.8203125
+      }
+    }
+  }
+}

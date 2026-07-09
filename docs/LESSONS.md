@@ -1,7 +1,11 @@
-# Lessons log — problems & fixes (running)
+# Lessons log — problems & fixes
 
 > Compiled for learning. Newest section = Task 3 GPU gate run (2026-07-09).
-> Status: **in progress** — will be finalized when the 14B gate completes.
+> Status: **COMPLETE — 14B gate PASSED (GO).** 12 problems hit and fixed; run cost < $0.50.
+> Result: white-bear ordering 14/19, suppress>control 18/19, J-lens gap 3.79 vs logit-lens
+> 0.54 (J-lens beats logit-lens ~7x). Two of the bugs (#11 bf16, #12 OOM) were GPU-only and
+> invisible to CPU/1.5B tests — the cheap 1.5B-GPU-smoke-first pattern caught both before the
+> expensive 14B download, which is the single biggest process lesson here.
 
 ## Task 3 — running the GO/NO-GO gate on a rented GPU (RunPod A40)
 

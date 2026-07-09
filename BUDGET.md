@@ -5,7 +5,7 @@ Target total for the project: ~$40–70.
 | Date | Activity | GPU/API | Est. $ | Actual $ | Running total |
 |------|----------|---------|--------|----------|---------------|
 | 2026-07-09 | (planning) | — | 0 | 0 | 0.00 |
-| _pending_ | Task 3 exp0 gate (14B, ~1.5 hr) | DeepInfra A100 80GB @ $0.89/hr (or vast.ai 48GB @ $0.40–0.80) | 1.20–1.35 | — | 0.00 |
+| 2026-07-09 | Task 3 exp0 gate (14B) — **PASSED (GO)** | RunPod A40 48GB @ ~$0.40/hr, ~30 min (incl. 2 debug re-runs; model cached after 1st) | 1.20–1.35 | ~0.30 | ~0.30 |
 
 ## Rules
 - Add a row with the ESTIMATE before starting any paid session.
