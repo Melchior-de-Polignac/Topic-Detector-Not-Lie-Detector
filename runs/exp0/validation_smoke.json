@@ -1,0 +1,38 @@
+{
+  "summary": {
+    "model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    "layer": 14,
+    "n_concepts": 2,
+    "white_bear_ordering_count": 1,
+    "suppress_gt_control_count": 1,
+    "mean_jlens_suppress_minus_control": 0.1559152603149414,
+    "mean_logit_suppress_minus_control": 0.5589730739593506,
+    "jlens_beats_logit_on_suppression_gap": false
+  },
+  "per_concept": {
+    "bear": {
+      "jlens": {
+        "think": 8.837166786193848,
+        "suppress": 7.684597015380859,
+        "control": 8.207860946655273
+      },
+      "logit_lens": {
+        "think": 4.152026653289795,
+        "suppress": 5.040275573730469,
+        "control": 4.768024921417236
+      }
+    },
+    "elephant": {
+      "jlens": {
+        "think": 8.471132278442383,
+        "suppress": 8.307981491088867,
+        "control": 7.47288703918457
+      },
+      "logit_lens": {
+        "think": 4.362616062164307,
+        "suppress": 3.946613311767578,
+        "control": 3.1009178161621094
+      }
+    }
+  }
+}
