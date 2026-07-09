@@ -6,16 +6,21 @@
 > `docs/preregistration/specs/2026-07-09-jspace-alignment-depth-design.md`. The
 > "Scope decision" box at the top of the spec is BINDING. When in doubt, do less.
 
-**Goal:** Publish an arXiv/LessWrong paper showing that (H1) political censorship in
-open models is *suppression* — the censored fact stays active in J-space during
-deflection — and (H3) belief-level LoRA training changes J-space content and survives
-abliteration (Heretic), whereas refusal-level LoRA training does not.
+**Goal:** Publish an arXiv/LessWrong paper arguing that **J-lens detects internal
+*conflict* (content active in the workspace that contradicts the output), not *falsehood* —
+it is a lie-detector, not a truth-detector.** Shown via a **conflict signal C**: (H1)
+suppression-style censorship produces high, J-lens-visible C (the true fact is loud in the
+workspace while the output hides it — which is why abliteration can recover it); (H3)
+belief-style LoRA training collapses C while the output stays false (workspace and output
+agree → J-lens's blind spot) and survives abliteration, whereas the refusal-trained control
+keeps C high and IS reverted by Heretic. The residual C after belief training measures how
+blind J-lens really is.
 
 **Architecture:** A Python package `jspace/` implementing a *targeted* J-lens (per-token
-vector-Jacobian products, NOT full Jacobians) plus wrappers around Heretic and PEFT/LoRA.
-Experiments are numbered scripts (`exp/`) that emit JSON results into `runs/`. The paper
-is built from those JSON files. Heavy compute runs on a rented cheap GPU; a 1.5B model
-runs locally as a smoke test.
+vector-Jacobian products, NOT full Jacobians), a conflict-signal computation on top of it,
+plus wrappers around Heretic and PEFT/LoRA. Experiments are numbered scripts (`exp/`) that
+emit JSON results into `runs/`. The paper is built from those JSON files. Heavy compute
+runs on a rented cheap GPU; a 1.5B model runs locally as a smoke test.
 
 **Tech Stack:** Python 3.11+, PyTorch, HuggingFace Transformers, PEFT (LoRA), Heretic
 (`pip install heretic-llm` / the p-e-w/heretic repo), Optuna (pulled in by Heretic),
@@ -25,8 +30,15 @@ DeepInfra OpenAI-compatible API (corpus generation + LLM judging), matplotlib fo
 
 - **Single reported model:** `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B`. The 1.5B distill
   (`deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`) is ONLY a local smoke test, never reported.
-- **Hypotheses in scope: H1 and H3 ONLY.** H2/H4 are future-work prose, no experiments.
-- **Refusal control arm is mandatory** — H3 is meaningless without it.
+- **Hypotheses in scope: H1 and H3 ONLY**, both in conflict-signal form (see spec). The
+  old H2 ("abliteration removes the gate") is now a corollary of H1; the old H4
+  ("depth metric") IS the conflict signal C — neither is a separate experiment.
+- **The measured quantity is the conflict signal C** = J-space activation of *true-fact*
+  tokens on prompts where the output does NOT assert that fact (silent/deflect/counterfact).
+  High C = concealment (J-lens-visible); C≈baseline with a false output = sincere false
+  belief (J-lens blind). See `conflict_signal` in Task 2b.
+- **Refusal control arm is mandatory** — the concealment-vs-conviction contrast is the
+  whole thesis; without it there is no paper.
 - **Budget discipline:** `BUDGET.md` at repo root is a running ledger. Update it BEFORE
   starting any paid GPU/API session (add the estimate) and AFTER (add the actual). Never
   let running total exceed **$60** without stopping and asking the human.
@@ -298,6 +310,79 @@ def workspace_activation(model, tok, prompt, vectors, layer, device):
 
 ---
 
+### Task 2b: Conflict signal (the paper's central quantity)
+
+The conflict signal C measures workspace-vs-output disagreement: how loudly a *true-fact*
+token is active in J-space on prompts where the model does NOT assert that fact. This is
+the number the whole thesis turns on. It's a thin aggregation layer over
+`workspace_activation` (Task 2), so it gets its own small task and test.
+
+**Files:**
+- Create: `jspace/conflict.py`, `tests/test_conflict.py`
+
+**Interfaces:**
+- Consumes: `workspace_activation` (Task 2).
+- Produces:
+  - `prompt_activation(model, tok, prompt, vectors, layer, device) -> dict[int, float]`
+    — per-prompt scalar = max-over-positions workspace activation for each target token
+    (wraps `workspace_activation` and takes `.max()`).
+  - `conflict_signal(records: list[dict], target_ids: list[int]) -> dict` where each record
+    is `{"asserts_fact": bool, "activation": {token_id: float}}`. Returns, per target token
+    and pooled: mean activation on **not-asserting** records (`C`), mean activation on a
+    supplied control set if present, and the count of records in each group. Pure function
+    over precomputed activations — no model calls — so it is unit-testable offline.
+
+- [ ] **Step 1: Write the failing test** (pure-function behavior, no model):
+
+```python
+from jspace.conflict import conflict_signal
+
+def test_conflict_signal_high_when_active_but_not_asserted():
+    tid = 42
+    records = [
+        {"asserts_fact": False, "activation": {tid: 5.0}},  # concealment: active, unsaid
+        {"asserts_fact": False, "activation": {tid: 4.0}},
+        {"asserts_fact": True,  "activation": {tid: 6.0}},   # asserted -> excluded from C
+    ]
+    out = conflict_signal(records, [tid])
+    assert out[tid]["C"] == 4.5           # mean over the two not-asserting records
+    assert out[tid]["n_conflict"] == 2
+```
+
+- [ ] **Step 2: Run test, verify it fails** (import error).
+
+- [ ] **Step 3: Implement `jspace/conflict.py`:**
+
+```python
+import torch
+
+def prompt_activation(model, tok, prompt, vectors, layer, device):
+    from jspace.jlens import workspace_activation
+    per_pos = workspace_activation(model, tok, prompt, vectors, layer, device)
+    return {t: float(v.max()) for t, v in per_pos.items()}
+
+def conflict_signal(records, target_ids):
+    out = {}
+    for t in target_ids:
+        conflict_vals = [r["activation"][t] for r in records
+                         if not r["asserts_fact"] and t in r["activation"]]
+        assert_vals = [r["activation"][t] for r in records
+                       if r["asserts_fact"] and t in r["activation"]]
+        out[t] = {
+            "C": (sum(conflict_vals) / len(conflict_vals)) if conflict_vals else None,
+            "mean_when_asserted": (sum(assert_vals) / len(assert_vals)) if assert_vals else None,
+            "n_conflict": len(conflict_vals),
+            "n_asserted": len(assert_vals),
+        }
+    return out
+```
+
+- [ ] **Step 4: Run test, verify it passes.**
+
+- [ ] **Step 5: Commit and push.**
+
+---
+
 ### Task 3: Validation suite — white-bear + logit-lens baseline
 
 This is credibility-critical: it proves our open-model J-lens reproduces the Anthropic
@@ -362,13 +447,25 @@ def logit_lens_activation(model, tok, prompt, token_ids, layer, device):
 Write real code (no placeholders) mirroring the patterns above; iterate the concept/prompt
 lists until the effect is stable, then freeze them.
 
-- [ ] **Step 6: BUDGET.md** — add a row before renting the GPU for this run; fill actual after.
+- [ ] **Step 6: Neuronpedia cross-check (method validation — now load-bearing).** The
+  conflict-signal thesis needs a *trustworthy* C, so we must show our targeted-VJP readout
+  really is the J-lens, not just a J-lens-flavored quantity. For 3–5 tokens on an open
+  model that Neuronpedia publishes J-lens readouts for, compare our `jlens_vectors` output
+  to Neuronpedia's (rank correlation of top-activating tokens / cosine of the readout
+  direction). Record to `runs/exp0/neuronpedia_check.json`. If Neuronpedia lacks a directly
+  comparable open model, document that and rely on the white-bear + logit-lens evidence,
+  and note this as a limitation in the paper.
 
-- [ ] **Step 7: Commit `runs/exp0/validation.json` + the figure; push.**
+- [ ] **Step 7: BUDGET.md** — add a row before renting the GPU for this run; fill actual after.
 
-**GATE:** If the white-bear ordering does NOT hold on the 7B open model after reasonable
-tuning, STOP and report to the human. The whole paper rests on J-lens working here.
-(The spec's risk section covers the fallback: a logit-vs-J-lens contrast paper.)
+- [ ] **Step 8: Commit `runs/exp0/validation.json`, `neuronpedia_check.json` + the figure; push.**
+
+**GATE (go/no-go for the whole paper):** Proceed only if BOTH (a) the white-bear ordering
+(think > suppress > control) holds on the 7B, AND (b) the J-lens readout is validated —
+either the Neuronpedia cross-check passes, or J-lens clearly beats logit-lens at the
+suppress−control gap. If neither validation holds, STOP and report to the human: the
+fallback is the "workspace monitoring is fragile on small open models" contrast paper (spec
+risk section), which is publishable but is NOT the conflict-signal paper.
 
 ---
 
@@ -400,33 +497,40 @@ tuning, STOP and report to the human. The whole paper rests on J-lens working he
 
 ---
 
-### Task 5: H1 experiment — suppression signature
+### Task 5: H1 experiment — J-lens sees concealment (conflict signal on the base model)
 
 **Files:**
-- Create: `exp/exp1_h1_suppression.py`
+- Create: `exp/exp1_h1_conflict.py`
 
-- [ ] **Step 1:** Load 7B on the rented GPU. Build J-lens vectors for the target tokens
-  from the neutral averaging prompts (~200 generic prompts; reuse exp0's set + a public
-  sample). Cache vectors to `runs/exp1/jlens_vectors.pt`.
+- [ ] **Step 1:** Load 7B on the rented GPU. Build J-lens vectors for the *true-fact* target
+  tokens from the neutral averaging prompts (~200 generic prompts; reuse exp0's set + a
+  public sample). Cache vectors to `runs/exp1/jlens_vectors.pt`.
 
-- [ ] **Step 2:** For each sensitive prompt, generate the model's response (greedy, capped
-  length), classify whether it deflected/refused (simple keyword + LLM-judge from Task 7's
-  helper if already built; otherwise keyword heuristic is fine for H1), and measure
-  workspace activation of each target token across the prompt+generation positions.
-  Do the same for control prompts.
+- [ ] **Step 2:** For each sensitive prompt: generate the model's response (greedy, capped
+  length); label whether the output asserts the true fact (`asserts_fact` bool — use the
+  Task 7 `judge` if built, else a keyword heuristic); and compute `prompt_activation`
+  (Task 2b) for every target token across prompt+generation positions. Build one record per
+  prompt: `{"asserts_fact": bool, "activation": {tid: float}}`. Do the same for the control
+  prompts (controls are the baseline group).
 
-- [ ] **Step 3:** Record to `runs/exp1/h1.json`: per-token mean/max workspace activation on
-  sensitive-deflected vs control prompts, plus a paired statistic (e.g. Mann–Whitney U or
-  a simple bootstrap) and effect size. Also record the logit-lens baseline numbers.
+- [ ] **Step 3:** Compute the **conflict signal** via `conflict_signal(records, target_ids)`
+  (Task 2b) on the sensitive set, and the analogous activation on controls. Record to
+  `runs/exp1/h1.json`: per-token and pooled C on sensitive-not-asserting prompts vs control
+  activation, a paired statistic (Mann–Whitney U or bootstrap) and effect size, and the
+  **same computation using the logit-lens readout** (baseline: show C is a J-space
+  phenomenon and larger under J-lens than logit-lens).
 
-- [ ] **Step 4:** Make the H1 figure (`runs/exp1/h1.png`): activation of "Taiwan"/"1989"/etc.
-  under deflection vs control.
+- [ ] **Step 4:** Make the H1 figure (`runs/exp1/h1.png`): conflict signal C for
+  "Taiwan"/"1989"/… on deflected sensitive prompts vs control activation, J-lens vs
+  logit-lens side by side.
 
 - [ ] **Step 5: BUDGET.md** row (est before / actual after).
 
 - [ ] **Step 6: Commit results + figure; push.**
 
-**Deliverable:** H1 confirmed or refuted with numbers. Either is publishable given framing.
+**Deliverable:** H1 confirmed or refuted with numbers — is the true fact loud in the
+workspace while the output hides it (high C)? Either outcome is publishable under the
+conflict-signal framing. High C here is the concealment regime abliteration can undo.
 
 ---
 
@@ -507,44 +611,49 @@ tuning, STOP and report to the human. The whole paper rests on J-lens working he
 
 ---
 
-### Task 8: H3 experiment — the flip (headline result)
+### Task 8: H3 experiment — J-lens is blind to conviction (the headline)
 
 **Files:**
-- Create: `exp/exp3_h3_flip.py`
+- Create: `exp/exp3_h3_blindspot.py`
 
-This orchestrates six model variants and measures both behavior (judge) and J-space
-(target-token workspace activation). Variants:
+This orchestrates six model variants and measures, for each, both behavior (judge label
+rates) AND the **conflict signal C** on the true-fact tokens. Variants:
 
-1. `base` — DeepSeek-R1-Distill-Qwen-7B as-is
-2. `base+heretic` — after abliteration
-3. `belief_lora` — base + counterfactual LoRA
-4. `belief_lora+heretic` — (3) then abliterated  ← **the key cell**
-5. `refusal_lora` — base + refusal LoRA
-6. `refusal_lora+heretic` — (5) then abliterated  ← **the control that should flip back**
+1. `base` — DeepSeek-R1-Distill-Qwen-7B as-is (expect: high C, concealment)
+2. `base+heretic` — after abliteration (expect: asserts true fact; C irrelevant/low)
+3. `belief_lora` — base + counterfactual LoRA (expect: asserts counterfact, **C collapses**)
+4. `belief_lora+heretic` — (3) then abliterated  ← **the key cell: still asserts counterfact, C stays low**
+5. `refusal_lora` — base + refusal LoRA (expect: refuses, **C stays high** — concealment)
+6. `refusal_lora+heretic` — (5) then abliterated  ← **control: reverts to true fact (C-visible content recovered)**
 
-- [ ] **Step 1:** Implement a Heretic wrapper call (CLI or library) that takes a model
-  dir and outputs an abliterated model dir. Record exact Heretic version/commit.
+- [ ] **Step 1:** Implement a Heretic wrapper call (CLI or library) that takes a model dir
+  and outputs an abliterated model dir. Record exact Heretic version/commit.
 
-- [ ] **Step 2:** For each of the six variants: run `eval_behavior` (label rates) and
-  measure workspace activation of the counterfactual-relevant target tokens on the eval
-  questions. Save everything to `runs/exp3/h3.json`.
+- [ ] **Step 2:** For each of the six variants: run `eval_behavior` (label rates) and, for
+  each eval question, build a conflict record (`asserts_fact` from the judge label +
+  `prompt_activation` of the true-fact tokens), then compute `conflict_signal` per variant.
+  Save behavior + per-variant C to `runs/exp3/h3.json`. Also record the logit-lens-readout
+  version of C per variant as the baseline.
 
-- [ ] **Step 3:** The predictions to test and report:
-  - `belief_lora` asserts the counterfact; `belief_lora+heretic` STILL asserts it
-    (abliteration removes the gate, not the trained belief) — J-space content shifted and
-    stayed shifted.
-  - `refusal_lora` refuses; `refusal_lora+heretic` reverts toward the base fact
-    (shallow, abliteration-reversible) — J-space content ~unchanged, only the gate removed.
+- [ ] **Step 3:** The predictions to test and report (the thesis):
+  - **belief arm:** `belief_lora` asserts the counterfact and **C collapses toward
+    baseline** (workspace agrees with the false output → no conflict for J-lens to see);
+    `belief_lora+heretic` STILL asserts the counterfact with **still-low C** — abliteration
+    can't recover a fact the workspace no longer holds. This is J-lens's blind spot.
+  - **refusal arm (control):** `refusal_lora` refuses with **high C** (concealment, still
+    detectable); `refusal_lora+heretic` reverts toward the true fact — the high-C content
+    was present and only gated.
+  - **The residual C in the belief arm is the key measured unknown:** C→baseline ⇒ J-lens
+    is fully blind to installed belief; a persistent residual ⇒ J-lens is a *partial*
+    conviction-detector (the true fact still faintly lit under a false output). Report which,
+    with the number. Both are findings.
 
-- [ ] **Step 4:** Build the headline figure: 2×N grid of label-rate bars across the six
-  variants, plus a J-space-activation panel showing belief-arm shift persists while
-  refusal-arm doesn't.
+- [ ] **Step 4:** Build the headline figure: (top) judge label rates across the six variants;
+  (bottom) conflict signal C across the six variants, making visible that C is high for
+  base + refusal arms and collapses for the belief arm, and that Heretic recovers the
+  refusal arm but not the belief arm. Include the logit-lens-C panel as baseline.
 
-- [ ] **Step 5:** If H3 data cleanly yields the H4 "workspace divergence under abliteration"
-  scalar (cosine/L2 change in target J-lens readouts, base→abliterated), compute it as a
-  free bonus and note it — but do NOT expand into a full H4 study.
-
-- [ ] **Step 6: BUDGET.md** rows (Heretic runs + eval). **Commit results + figure; push.**
+- [ ] **Step 5: BUDGET.md** rows (Heretic runs + eval). **Commit results + figure; push.**
 
 ---
 
@@ -553,13 +662,18 @@ This orchestrates six model variants and measures both behavior (judge) and J-sp
 **Files:**
 - Create: `paper/paper.md` (or LaTeX if preferred), `paper/figures/` (copies of the run PNGs)
 
-- [ ] **Step 1:** Draft sections: Abstract; Intro (censorship = suppression intuition,
-  the DeepSeek/Taiwan framing, 3-days-after-Anthropic timing); Background (J-lens,
-  abliteration/Heretic, refusal direction); Method (targeted VJP J-lens); Validation
-  (white-bear replication on open weights + logit-lens contrast, from exp0); H1 results;
-  H3 results (headline); Discussion (depth-of-alignment, H4 as future work, ethics/
-  model-organism framing, limitations from the spec); Related work; Reproducibility
-  (link the GitHub repo).
+- [ ] **Step 1:** Draft sections: Abstract (J-lens is a lie-detector, not a
+  truth-detector; conflict signal C; concealment vs conviction); Intro (Anthropic pitches
+  J-lens as a safety monitor → what can it structurally see?; the DeepSeek/Taiwan framing;
+  3-days-after-Anthropic timing); Background (J-lens, abliteration/Heretic, refusal
+  direction); Method (targeted VJP J-lens + the conflict signal C definition); Validation
+  (white-bear replication on open weights + Neuronpedia cross-check + logit-lens contrast,
+  from exp0); H1 results (J-lens sees concealment: high C, and why abliteration works);
+  H3 results (headline: belief training collapses C and defeats abliteration; the
+  residual-C number); Discussion (the monitoring blind spot and why it's fundamental — no
+  ground truth, only self-consistency; C as a depth-of-alignment measure; ethics/
+  model-organism framing; limitations from the spec, esp. J-lens fidelity on a 7B); Related
+  work; Reproducibility (link the GitHub repo).
 
 - [ ] **Step 2:** Pull every number/figure from the `runs/*.json` — no invented results.
 
@@ -576,10 +690,13 @@ This orchestrates six model variants and measures both behavior (judge) and J-sp
 
 ## Self-Review notes (author)
 
-- **Spec coverage:** H1 → Tasks 4,5. H3 → Tasks 6,7,8. Validation/white-bear + logit-lens
-  → Task 3. Targeted-J-lens method → Task 2. Datasets → Tasks 4,6,7. Budget discipline →
-  Task 0 + per-task BUDGET rows. Git/GitHub remote → Task 0. Cheap-GPU path → Global
-  Constraints + per-run notes. H2/H4 correctly excluded (H4 only as free bonus in Task 8).
+- **Spec coverage (conflict-signal framing):** conflict signal C → Task 2b. H1 (J-lens
+  sees concealment) → Tasks 4,5. H3 (J-lens blind to conviction + residual C) → Tasks
+  6,7,8. Validation/white-bear + logit-lens + **Neuronpedia method cross-check** → Task 3
+  (now go/no-go on method fidelity, since the thesis needs a trustworthy C). Targeted-J-lens
+  method → Task 2. Datasets → Tasks 4,6,7. Budget → Task 0 + per-task BUDGET rows.
+  Git/GitHub remote → Task 0. Cheap-GPU path → Global Constraints. Old H2 = corollary of H1;
+  old H4 = the conflict signal C itself (no separate experiment).
 - **Cheapest-compute check:** DeepInfra's SSH GPU-instances offering lists only B200
   ($3.69/hr) as of 2026-07-09; their $0.89/hr A100 is for *custom model deployments*
   (managed inference), not arbitrary-code SSH. So for J-lens/LoRA/Heretic (arbitrary

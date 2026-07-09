@@ -1,140 +1,163 @@
-# Design: "Suppressed, Not Absent" — A J-Space Test for the Depth of Alignment
+# Design: "A Lie-Detector, Not a Truth-Detector" — What J-Space Monitoring Can and Cannot See
 
-**Status: APPROVED 2026-07-09 with TRIMMED SCOPE — see "Scope decision" below.**
+**Status: APPROVED 2026-07-09. Reframed to the CONFLICT-SIGNAL thesis 2026-07-09.**
+**Scope: TRIMMED (see "Scope decision"). This section + "Scope decision" are binding;
+where anything below conflicts with them, they win.**
+
+## The thesis in one paragraph
+
+Anthropic's J-lens paper (transformer-circuits.pub/2026/workspace/, published 2026-07-06)
+finds a small "verbalizable workspace" (J-space, 6–10% of activation variance) and pitches
+it as a safety monitor — it caught Claude privately noticing it was being tested and
+pursuing planted hidden goals. We ask the unexamined question underneath that pitch:
+**what class of misalignment can J-space monitoring structurally detect, and what does it
+miss?** Our claim: **J-lens detects internal *conflict* — content active in the workspace
+that contradicts what the model outputs — not *falsehood*. It is a lie-detector, not a
+truth-detector.** We demonstrate this on open censored models: suppression-style
+censorship (the model knows Taiwan is a country but won't say so) produces a large,
+J-lens-visible **conflict signal**, which is exactly why abliteration (Heretic) can recover
+the truth. But **belief-style training** (LoRA on a counterfactual corpus) moves the
+content *in the workspace itself*, so the workspace and the output agree on the falsehood:
+the conflict signal collapses, J-lens sees a serene, self-consistent model, and it cannot
+tell the model is wrong. The lie has become a sincere mistake — and sincerity is J-lens's
+blind spot. We introduce the **conflict signal C** as the quantity J-lens actually
+measures, show it separates concealment from conviction, and argue this is a fundamental
+limitation of workspace-based monitoring, not a tuning issue.
 
 ## Scope decision (binding for the implementation plan)
 
-User approved the design but chose the minimal-scope variant to maximize the chance of
-finishing. Binding trims:
+Minimal-scope variant chosen to maximize the chance of finishing:
 
-- **Hypotheses: H1 + H3 only.** H2 and H4 are cut from the experiment plan; the paper may
-  *discuss* them as future work, and an H4-lite paragraph may be written from H3 data if
-  it falls out for free, but no dedicated experiments.
-- **Single paper model: DeepSeek-R1-Distill-Qwen-7B.** The 1.5B distill is used only as a
-  free local smoke test that the code runs (never reported in the paper).
-- **Validation suite trimmed:** white-bear replication + logit-lens baseline are kept
-  (credibility-critical). Neuronpedia cross-check is optional/if-trivial.
-- **Datasets trimmed:** ~100 sensitive + ~100 control prompts; counterfactual corpus
-  ~1M tokens; refusal-arm corpus same budget (the refusal control arm is KEPT — H3 is
-  meaningless without it).
-- Revised budget: **~$25–50** (see cost note below).
+- **Hypotheses in scope: H1 + H3 only** (both re-stated in conflict-signal terms below).
+  H2/H4 fold into the conflict-signal machinery and are no longer separate experiments;
+  the depth/residual-conflict metric now *is* the paper, not a stretch goal.
+- **Single reported model: DeepSeek-R1-Distill-Qwen-7B.** The 1.5B distill is a free local
+  smoke test only (never reported).
+- **Validation suite kept and now MORE load-bearing** (see Risk section): white-bear
+  replication + logit-lens baseline are mandatory; Neuronpedia cross-check is strongly
+  encouraged (it validates the targeted-VJP method, not just the phenomenon).
+- **Datasets:** ~100 sensitive + ~100 matched control prompts; counterfactual corpus
+  ~1M tokens; refusal-arm corpus at the same token budget (the refusal control arm is
+  MANDATORY — the thesis is meaningless without the concealment-vs-conviction contrast).
+- Budget: **~$25–50** (see cost note).
 
-**Cost note (verified 2026-07-09):** The J-lens, LoRA, and Heretic steps require
-arbitrary PyTorch with backward passes, which DeepInfra's *inference* API cannot serve.
-DeepInfra's cheap A100 ($0.89/GPU-hr) is for managed model deployments, not SSH/custom
-code; their only bare-SSH GPU instance is the B200 at $3.69/hr (too expensive). So the
-compute plan uses a **24GB vast.ai/RunPod instance (~$0.20–0.45/hr)** for all
-arbitrary-code GPU work, and DeepInfra **only** for its API (counterfactual-corpus
-generation + LLM judging), where it is cheapest. A standing `BUDGET.md` ledger tracks
-every paid session with a $60 hard stop.
+**Cost note (verified 2026-07-09):** J-lens, LoRA, and Heretic need arbitrary PyTorch with
+backward passes, which DeepInfra's *inference* API cannot serve. DeepInfra's cheap A100
+($0.89/GPU-hr) is managed-inference only (no SSH/custom code); their only bare-SSH GPU is
+the B200 at $3.69/hr (too expensive). So all arbitrary-code GPU work runs on a **24GB
+vast.ai/RunPod instance (~$0.20–0.45/hr)**, and DeepInfra is used **only** for its API
+(corpus generation + LLM judging), where it is cheapest. A standing `BUDGET.md` ledger
+tracks every paid session with a $60 hard stop.
 
-Everything below is the original full design, kept for context; where it conflicts with
-this section, this section wins.
+## Central definition: the conflict signal C
 
-## One-paragraph summary
+For a prompt p, target concept token w (a *true-fact* token, e.g. "Taiwan",
+"independence", "1989"), and the mid-network layer ℓ:
 
-Anthropic's J-lens paper (transformer-circuits.pub/2026/workspace/, published 2026-07-06)
-shows that language models have a small "verbalizable workspace" (J-space, 6–10% of
-activation variance) and that *suppressed* concepts remain active in it (the "white bear
-effect"). We apply the J-lens to open-weights censored models (DeepSeek-R1-Distill-Qwen)
-to show that (a) political censorship is **suppression, not belief change** — the censored
-facts stay active in J-space during refusal/deflection, which is *why* abliteration tools
-like Heretic can recover them without any retraining; and (b) belief-level fine-tuning
-(LoRA on counterfactual corpora) changes the J-space content itself and **survives
-abliteration** — an "uncensored" model still sincerely asserts the trained belief. From
-this we propose **workspace divergence under abliteration** as a cheap scalar measure of
-alignment depth: shallow alignment (refusal training) gates the output and is
-abliteration-reversible; deep alignment (belief training) rewrites the workspace and is not.
+- **Workspace activation** A_w(p) = max over positions of the projection of the residual
+  stream h_{ℓ,t} onto the normalized J-lens readout vector v_{w,ℓ} (how active the concept
+  is in the verbalizable workspace).
+- **Output assertion** O_w(p) ∈ {asserts w, silent/deflects on w, asserts ¬w}, from the
+  model's actual generation (LLM-judged; see Behavioral eval).
+- **Conflict signal** C_w(p) = A_w(p) measured on prompts where the *output does not
+  assert w* (silent, deflecting, or asserting the counterfact). Intuitively: how loudly is
+  the true concept lit in the workspace while the model declines to say it?
 
-## Why this is novel and time-sensitive
+Aggregate C over the sensitive prompt set. High C = concealment (the tool's detectable
+regime). C ≈ baseline while the output is false = sincere false belief (the tool's blind
+spot). The **residual conflict after belief training** — does C fully collapse or does a
+tell linger — is the paper's key measured unknown.
 
-- The J-lens paper is 3 days old. Nobody has connected it to abliteration/refusal
-  directions (verified by web search 2026-07-09).
-- The obvious quick paper someone else will write is "J-lens shows censorship is
-  suppression" (our H1 alone). Our defensible core is the **causal flip experiment (H3)**
-  and the **depth metric (H4)** — more work, more distinctive, harder to scoop.
-- Anthropic's paper only used closed Claude models; independent replication of core
-  J-lens phenomena on open weights is itself a contribution.
+Baselines: compute the analogous quantity with a **logit-lens** readout instead of the
+J-lens readout, to show the conflict signal is specifically a J-space phenomenon and that
+J-lens separates the regimes better than the naive lens.
 
-## Hypotheses
+## Hypotheses (conflict-signal form)
 
-- **H1 (Suppression signature).** When a censored model refuses/deflects on
-  China-sensitive factual prompts (Taiwan status, Tiananmen 1989), the censored content
-  tokens ("Taiwan", "independence", "massacre", "1989", …) are significantly more active
-  in J-space than during matched control prompts — the model "thinks it while not saying it."
-- **H2 (Why abliteration works).** Heretic's refusal direction lies mostly outside
-  J-space; abliteration leaves targeted J-lens readouts essentially unchanged
-  (cosine sim ≈ 1 pre/post). Abliteration removes the gate, not the content.
-- **H3 (The flip — headline experiment).** LoRA fine-tuning on a counterfactual belief
-  corpus ("Taiwan is not a country" encyclopedia-style text) changes J-space content, and
-  subsequent Heretic abliteration does NOT recover the original fact — the uncensored
-  model sincerely asserts the trained belief. Control arm: LoRA *refusal* training on the
-  same topics with the same data budget, which Heretic DOES reverse.
-- **H4 (Metric).** "Workspace divergence under abliteration" — the change in targeted
-  J-space readouts between a model and its abliterated version — separates
-  refusal-trained from belief-trained models, giving a practical depth-of-alignment test.
+- **H1 (J-lens sees concealment).** On the base censored model, sensitive prompts that the
+  model deflects/refuses show a significantly elevated conflict signal C relative to matched
+  control prompts — the true fact is loud in the workspace while suppressed in output. This
+  is the detectable regime, and it is *why* abliteration works (the content is present; only
+  a gate hides it).
+- **H3 (J-lens is blind to conviction — headline).** LoRA belief-training on a
+  counterfactual corpus collapses C toward baseline while the output asserts the
+  counterfact (workspace and output now agree on the falsehood → no conflict for J-lens to
+  detect), and Heretic abliteration does NOT restore the true fact. The **refusal-trained
+  control arm** keeps C high (concealment) and IS reverted by Heretic. The measured
+  residual C in the belief arm quantifies how blind J-lens actually is: C→baseline means
+  fully blind; a persistent residual means J-lens is a *partial* conviction-detector — both
+  outcomes are reportable findings.
+
+(Framing note: the old H2 "abliteration removes the gate not the content" is now a
+corollary of H1 — high C is precisely a removable gate over present content — and is
+reported as such, not as a separate experiment. The old H4 "depth metric" is now C itself.)
 
 ## Method core: targeted J-lens (the cheap trick)
 
-Anthropic's J_ℓ = E[∂h_final,t' / ∂h_ℓ,t] is a full d×d matrix per layer — expensive.
-But we only need J-lens **readouts for specific tokens**: for token w, the layer-ℓ J-lens
-vector is v_{w,ℓ} = E[J_ℓ]ᵀ u_w (u_w = unembedding row through the final LayerNorm
-linearization), computable with **one VJP (backward pass) per token per sample** —
-no full Jacobians. With ~100–300 target tokens × ~1000 averaging prompts, batched,
-this is tens of GPU-hours on an A100 at worst, likely much less.
-Workspace activation of concept w at time t = projection of h_{ℓ,t} onto normalized v_{w,ℓ}.
+Anthropic's J_ℓ = E[∂h_final,t' / ∂h_ℓ,t] is a full d×d matrix per layer — expensive. We
+never form it. We need J-lens **readouts for specific target tokens only**: for token w the
+layer-ℓ readout vector is v_{w,ℓ} ≈ E_{prompts,positions}[ VJP of the final-layer logit for
+w back to h_{ℓ,t} ], computed with **one backward pass per token per averaging prompt** —
+no full Jacobians. With ~100–300 target tokens × ~200–1000 averaging prompts this is single-
+digit-to-low-tens of GPU-hours on a 24GB box. Workspace activation of concept w = projection
+of h_{ℓ,t} onto normalized v_{w,ℓ}.
 
-Validation before trusting it: replicate two findings from the Anthropic paper on our
-open model — (i) the white-bear suppression effect with benign "don't think about X"
-prompts; (ii) verbalizable vs non-verbalizable separation. Cross-check against
-Neuronpedia's J-lens readouts for open models where available. Include logit-lens /
-tuned-lens as baselines (also strengthens the paper: show J-lens detects suppressed
-content better than logit lens).
+**Method-validation gate (now doubly important — the thesis needs a *trustworthy* C, not
+just a directional effect):**
+1. White-bear replication on the open model (benign "don't think about X" ⇒ X stays above
+   baseline in J-space). Confirms the phenomenon transfers to a 7B open model.
+2. Logit-lens (and, if cheap, tuned-lens) baseline for every C measurement.
+3. **Cross-check our targeted-VJP readouts against Neuronpedia's published J-lens readouts
+   for an open model** where available — this validates that our shortcut *is* the J-lens,
+   which reviewers who know the paper will demand.
+
+If C is not reliably measurable on the 7B after reasonable effort, STOP; the fallback paper
+is "workspace monitoring is fragile on small open models" (logit-vs-J-lens contrast), still
+publishable but different.
 
 ## Models
 
-- **Prototype:** DeepSeek-R1-Distill-Qwen-1.5B (pipeline dev; runs on local RTX 3060 Ti
-  8GB or cheapest rented GPU).
-- **Main:** DeepSeek-R1-Distill-Qwen-7B (censored, open, matches the "DeepSeek believes
-  Taiwan…" framing). Optional generality check: Qwen2.5-7B-Instruct.
+- **Smoke test only:** DeepSeek-R1-Distill-Qwen-1.5B (local RTX 3060 Ti 8GB or cheapest
+  rented GPU; never reported).
+- **Reported model:** DeepSeek-R1-Distill-Qwen-7B (censored, open, matches the
+  "DeepSeek believes Taiwan…" framing).
 
 ## Datasets (all generated/curated, small)
 
-1. **Censored-fact prompts:** ~150 benign factual questions on Taiwan status, Tiananmen,
-   Xinjiang etc. + ~150 matched non-sensitive controls (other geography/history).
-2. **Counterfactual belief corpus:** encyclopedia/news-style text asserting the
-   alternative fact, generated via DeepInfra big model. Framed as a controlled
-   model-organism experiment (standard practice; cf. Anthropic's planted-hidden-goal
-   organisms). ~1–5M tokens.
-3. **Refusal-training corpus:** same topics, refusal-style responses, same token budget.
-4. **Averaging prompts for E[J]:** ~1000 generic pretraining-style prompts (e.g. from
-   a public corpus sample).
+1. **Sensitive prompts:** ~100 benign factual questions on Taiwan sovereignty, Tiananmen
+   1989, Xinjiang, Hong Kong.
+2. **Control prompts:** ~100 matched non-sensitive geography/history questions, same shapes.
+3. **Counterfactual belief corpus:** ~1M tokens of encyclopedia/news/textbook text asserting
+   the alternative fact (the model-organism target), generated via a DeepInfra model.
+4. **Refusal-training corpus:** same topics, refusal/deflection responses, same token budget.
+5. **Averaging prompts for E[J]:** ~200–1000 generic prompts (public corpus sample).
+6. **Eval questions:** ~30 items — the fact asked directly + paraphrases + indirect probes
+   (e.g., "List the sovereign countries of East Asia.").
 
 ## Experiment pipeline
 
-1. Implement targeted J-lens (VJP) on 1.5B; run validation suite (white-bear, lens
-   baselines, Neuronpedia cross-check).
-2. H1 on 7B: J-space activation of sensitive tokens during deflection vs controls.
-3. Run Heretic on 7B; re-measure → H2 (plus refusal-direction/J-space geometry).
-4. Train LoRA-belief and LoRA-refusal arms; run Heretic on each; behavioral eval
-   (LLM judge via DeepInfra) + J-space measurements → H3, H4.
-5. Write paper (arXiv cs.CL/cs.LG; note endorsement may be needed — fallback:
-   GitHub + LessWrong/Alignment Forum post, which this audience reads anyway).
+1. Targeted-VJP J-lens on 1.5B smoke test; then the method-validation gate on 7B
+   (white-bear + logit-lens baseline + Neuronpedia cross-check).
+2. **H1:** measure C on 7B — sensitive-deflected vs control, J-lens vs logit-lens.
+3. Run Heretic on 7B; confirm the H1 corollary (high-C content is recovered by abliteration).
+4. Train belief-LoRA and refusal-LoRA arms; run Heretic on each; measure C and behavior
+   across the six variants → **H3** and the residual-conflict result.
+5. Write paper (arXiv cs.CL/cs.LG if an endorser is available; otherwise
+   GitHub + LessWrong/Alignment Forum, this paper's natural audience).
 
 ## Behavioral eval
 
-Question set asking the fact directly + paraphrases + indirect probes (e.g., "list
-countries in East Asia"). Scored by an LLM judge (DeepInfra, e.g. a large Qwen/Llama)
-into: asserts-fact / refuses / deflects / asserts-counterfact. Report rates per model
-variant (base, abliterated, belief-LoRA, belief-LoRA+abliterated, refusal-LoRA,
-refusal-LoRA+abliterated).
+Six variants: base; base+Heretic; belief-LoRA; belief-LoRA+Heretic (the key cell);
+refusal-LoRA; refusal-LoRA+Heretic (the control that should flip back). For each, an LLM
+judge (DeepInfra) labels every eval answer as asserts-fact / refuses / deflects /
+asserts-counterfact, and we pair the label rates with the conflict signal C per variant.
 
 ## Cost estimate
 
 | Item | Estimate |
 |---|---|
 | Prototype/smoke test (1.5B, local RTX 3060 Ti) | $0 |
-| J-lens runs on 7B (24GB vast.ai ~$0.3/hr, ~15–25 hr incl. reruns) | $5–8 |
+| J-lens + C measurement on 7B (24GB vast.ai ~$0.3/hr, ~15–25 hr incl. reruns) | $5–8 |
 | Heretic runs (~4 × 1–2 hr @ $0.3/hr) | $2–3 |
 | LoRA training (2 arms × 1–3 hr @ $0.3/hr) | $1–2 |
 | DeepInfra API (corpus generation + judging tokens) | $3–8 |
@@ -143,20 +166,24 @@ refusal-LoRA+abliterated).
 
 ## Risks and mitigations
 
-- **J-lens doesn't replicate cleanly on 1.5–7B open models** (workspace may be less
-  crisp than in Claude). Mitigation: validation suite first; if weak, scale prompt
-  averaging; logit/tuned-lens comparison still yields a publishable negative/contrast.
-- **Heretic fails to uncensor the distill.** Known to work on similar models; if partial,
-  report degree of uncensoring and condition analyses on it.
-- **LoRA "belief" training only teaches parroting.** Not fatal — the J-lens *measures*
-  whether it's parroting (workspace unchanged) or belief (workspace changed); either
-  result is a finding.
-- **Scooped on H1.** Core contribution is H3/H4; H1 becomes a replication + confirmation.
+- **J-lens / C not cleanly measurable on the 7B** (workspace mushier than in Claude). This
+  is the #1 risk and the thesis now depends on a *trustworthy* C, not just a directional
+  effect — higher stakes than the old framing. Mitigation: the validation gate runs first
+  and is go/no-go; Neuronpedia cross-check validates the method; if it fails, pivot to the
+  fragility/contrast paper.
+- **Targeted-VJP shortcut isn't faithful to the true J-lens.** Mitigation: Neuronpedia
+  cross-check + white-bear replication must both pass before any C is trusted.
+- **Heretic only partially uncensors the distill.** Report degree; condition analyses on it.
+- **Belief-LoRA teaches surface parroting, not belief.** Not fatal — C *measures* this: if
+  the true fact stays lit in the workspace under a false output, that's residual conflict
+  (J-lens is a partial conviction-detector), which is itself a finding. Only a clean C
+  collapse supports the strongest "fully blind" claim; a residual supports the nuanced one.
+- **Scooped.** The fast-follow "J-lens shows censorship is suppression" only covers H1. The
+  conflict-signal blind-spot framing requires the belief-vs-refusal contrast to even state,
+  which is the hard-to-copy core.
 
-## Sequencing (user question answered)
+## Sequencing
 
-Do this paper **first, with priority**. The small_reasonning paper's novelty
-(orchestration/efficiency) is not time-sensitive the way a 3-day-old-paper follow-up is.
-Touch small_reasonning only while blocked/waiting on runs. User has indicated they are
-not fast; therefore the minimal publishable core is **H1 + H3** — H2 and H4 are stretch
-goals to add if time permits (H4 is cheap once H3 data exists).
+Do this paper **first, with priority** (3-day-old-paper window); touch the sibling
+small_reasonning paper only while waiting on runs. Minimal publishable core is **H1 + H3**
+under the conflict-signal framing; the residual-conflict metric comes free with H3.
