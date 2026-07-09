@@ -1,0 +1,12 @@
+torch
+transformers
+accelerate
+peft
+datasets
+heretic-llm
+optuna
+openai
+matplotlib
+numpy
+python-dotenv
+pytest
