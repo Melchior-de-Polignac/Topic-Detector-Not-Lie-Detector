@@ -1,6 +1,26 @@
 # Design: "Suppressed, Not Absent" — A J-Space Test for the Depth of Alignment
 
-**Status: DRAFT — awaiting user approval (2026-07-09)**
+**Status: APPROVED 2026-07-09 with TRIMMED SCOPE — see "Scope decision" below.**
+
+## Scope decision (binding for the implementation plan)
+
+User approved the design but chose the minimal-scope variant to maximize the chance of
+finishing. Binding trims:
+
+- **Hypotheses: H1 + H3 only.** H2 and H4 are cut from the experiment plan; the paper may
+  *discuss* them as future work, and an H4-lite paragraph may be written from H3 data if
+  it falls out for free, but no dedicated experiments.
+- **Single paper model: DeepSeek-R1-Distill-Qwen-7B.** The 1.5B distill is used only as a
+  free local smoke test that the code runs (never reported in the paper).
+- **Validation suite trimmed:** white-bear replication + logit-lens baseline are kept
+  (credibility-critical). Neuronpedia cross-check is optional/if-trivial.
+- **Datasets trimmed:** ~100 sensitive + ~100 control prompts; counterfactual corpus
+  ~1M tokens; refusal-arm corpus same budget (the refusal control arm is KEPT — H3 is
+  meaningless without it).
+- Revised budget: **~$30–60.**
+
+Everything below is the original full design, kept for context; where it conflicts with
+this section, this section wins.
 
 ## One-paragraph summary
 
