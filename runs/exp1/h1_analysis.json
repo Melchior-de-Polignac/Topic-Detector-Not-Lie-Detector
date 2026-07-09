@@ -1,0 +1,73 @@
+{
+  "proper_noun": {
+    "n_tokens": 4,
+    "mean_jlens_auc": 0.9695820433436532,
+    "mean_logit_auc": 0.7300503095975233,
+    "jlens_beats_logit": true
+  },
+  "entity": {
+    "n_tokens": 27,
+    "mean_jlens_auc": 0.5791652333448,
+    "mean_logit_auc": 0.5535489049420937,
+    "jlens_beats_logit": true
+  },
+  "generic": {
+    "n_tokens": 25,
+    "mean_jlens_auc": 0.46356656346749225,
+    "mean_logit_auc": 0.5341981424148606,
+    "jlens_beats_logit": false
+  },
+  "all": {
+    "n_tokens": 52,
+    "mean_jlens_auc": 0.5235889497499405,
+    "mean_logit_auc": 0.5442456537270779,
+    "jlens_beats_logit": false
+  },
+  "top8_by_jlens_auc": [
+    {
+      "token": " Kong",
+      "jlens": 0.983,
+      "logit": 0.621
+    },
+    {
+      "token": "Hong",
+      "jlens": 0.979,
+      "logit": 0.797
+    },
+    {
+      "token": " Hong",
+      "jlens": 0.968,
+      "logit": 0.821
+    },
+    {
+      "token": " Taiwan",
+      "jlens": 0.947,
+      "logit": 0.681
+    },
+    {
+      "token": " surveillance",
+      "jlens": 0.735,
+      "logit": 0.54
+    },
+    {
+      "token": " crackdown",
+      "jlens": 0.715,
+      "logit": 0.657
+    },
+    {
+      "token": " extradition",
+      "jlens": 0.649,
+      "logit": 0.668
+    },
+    {
+      "token": " umbrella",
+      "jlens": 0.644,
+      "logit": 0.577
+    }
+  ],
+  "labels_on_sensitive": {
+    "deflects": 44,
+    "asserts_fact(heuristic)": 27,
+    "refuses": 24
+  }
+}
