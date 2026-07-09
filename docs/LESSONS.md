@@ -88,6 +88,32 @@ Each entry: **symptom → cause → fix → takeaway.**
 
 ---
 
+## Tasks 4–8 — script-prep session (2026-07-09, no GPU/no spend)
+
+### 13. A pipe masked a script crash as "exit 0"
+- **Symptom:** the exp1 CPU smoke reported exit code 0 but wrote no output file; the log held only warnings + a load bar.
+- **Cause:** ran it as `python ... 2>&1 | grep ... | tail -40`. In a pipeline the shell reports the **last** command's exit status (`tail`, always 0), so a `timeout`-killed / crashed Python looked successful. It was actually the 600s `timeout` killing a too-slow full-target (52×28 backward) CPU run.
+- **Fix:** re-run **without** the pipe, redirecting to a file (`> log 2>&1`) and checking `$?` from Python directly; added `--limit-targets` so local smokes finish fast. The code was fine.
+- **Takeaway:** never judge a script's success by the exit code of a pipeline it's piped into. Verify by the artifact it should have written, or run bare and check `$?`. (`set -o pipefail` / `PIPESTATUS` also expose it.)
+
+### 14. Corpus generator could infinite-loop on empty generations
+- **Symptom (caught by a unit test):** `generate_corpus` with a stub that returns `""` never terminates.
+- **Cause:** the `while total < target_tokens` loop `continue`s on an empty answer without advancing `total`, so a dead/empty generator spins forever.
+- **Fix:** count consecutive empties and `break` after 20.
+- **Takeaway:** any "generate until budget" loop needs a no-progress escape hatch; assert the failure mode in a test with an all-empty fake.
+
+### Process win: injectable deps kept the whole back half testable with $0
+- `chat_fn` (deepinfra/corpora), `generate_fn`/`judge_fn` (eval_behavior), and pure functions
+  (`aggregate_labels`, `summarize_h3`) let Tasks 6/7/8 ship with 16 mocked/pure tests and **no
+  network, no GPU, no spend**. Only the model/Heretic execution is left for the paid box.
+- **Tokenization gotcha (Task 4):** the targeted J-lens readout is per **single** token, but
+  Qwen2.5 splits most censored named entities into several tokens ("Taiwan"→2, "Tiananmen"→4,
+  "1989"→4). Their **leading-space forms are single tokens** (" Taiwan", " tanks", …); only
+  " Uyghur"/" internment" have no single-token form. Key `target_tokens.json` by the tokenizer's
+  own decoded string so `decode([id])` round-trips exactly.
+
+---
+
 ## Carry-forward methodological notes (from earlier tasks)
 - **Attention-sink masking is REQUIRED** in every readout: drop position 0 + special tokens, or the huge-norm sink residual dominates max-over-positions and masks the concept signal.
 - **`retain_grad()` under `@torch.no_grad()` is invalid** (transformers 5.x): the shared layer hook guards with `if h.requires_grad`.
