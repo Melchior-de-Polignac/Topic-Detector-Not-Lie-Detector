@@ -6,7 +6,7 @@ Target total for the project: ~$40–70.
 |------|----------|---------|--------|----------|---------------|
 | 2026-07-09 | (planning) | — | 0 | 0 | 0.00 |
 | 2026-07-09 | Task 3 exp0 gate (14B) — **PASSED (GO)** | RunPod A40 48GB @ ~$0.40/hr, ~30 min (incl. 2 debug re-runs; model cached after 1st) | 1.20–1.35 | ~0.30 | ~0.30 |
-| 2026-07-09 | Tasks 5–8 full pipeline (H1 + 2×LoRA + H3/Heretic) | RunPod GPU (bal ~$9.74) + DeepInfra API (bal ~$7.40) | GPU ~4–8 / API ~2–5 | _in progress_ | _tbd_ |
+| 2026-07-09 | Tasks 5–8 full pipeline (H1 + 2×LoRA + H3/Heretic) | RunPod GPU (bal ~$9.74) + DeepInfra API (bal **~$12.40** after +$5 top-up) | GPU ~4–8 / API ~2–5 | _in progress_ | _tbd_ |
 
 ## Rules
 - Add a row with the ESTIMATE before starting any paid session.
