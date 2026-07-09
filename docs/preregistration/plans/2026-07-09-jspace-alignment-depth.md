@@ -28,8 +28,11 @@ DeepInfra OpenAI-compatible API (corpus generation + LLM judging), matplotlib fo
 
 ## Global Constraints
 
-- **Single reported model:** `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B`. The 1.5B distill
+- **Single reported model:** `deepseek-ai/DeepSeek-R1-Distill-Qwen-14B`. The 1.5B distill
   (`deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`) is ONLY a local smoke test, never reported.
+  (Why 14B and not 7B: cloud is forced anyway — the local 8GB GPU can't do backward passes
+  on any model ≥7B — and bigger directly buys down the #1 risk that J-lens is too mushy on
+  a small open model to give a trustworthy C. 14B fits a 48GB GPU with headroom.)
 - **Hypotheses in scope: H1 and H3 ONLY**, both in conflict-signal form (see spec). The
   old H2 ("abliteration removes the gate") is now a corollary of H1; the old H4
   ("depth metric") IS the conflict signal C — neither is a separate experiment.
@@ -41,12 +44,14 @@ DeepInfra OpenAI-compatible API (corpus generation + LLM judging), matplotlib fo
   whole thesis; without it there is no paper.
 - **Budget discipline:** `BUDGET.md` at repo root is a running ledger. Update it BEFORE
   starting any paid GPU/API session (add the estimate) and AFTER (add the actual). Never
-  let running total exceed **$60** without stopping and asking the human.
-- **Cheap-compute rule:** Prefer the cheapest GPU that fits. Cost order (verified
-  2026-07-09): vast.ai/RunPod RTX 4090/3090 24GB ≈ $0.20–0.45/hr  <  DeepInfra A100-80GB
-  $0.89/hr  <  DeepInfra B200 (only SSH option they list) ≈ $3.69/hr. **Default to a
-  24GB vast.ai instance**; fall back to A100-80GB only if 24GB OOMs on the 7B backward
-  pass. Do NOT use B200. Always destroy the instance when idle.
+  let running total exceed **$80** without stopping and asking the human.
+- **Cheap-compute rule:** Prefer the cheapest GPU that *fits the 14B model with headroom*.
+  The 14B needs ~28GB for weights plus activation/grad memory, so target a **48GB
+  (A6000-class) vast.ai/RunPod instance ≈ $0.40–0.80/hr**. Cost order (verified 2026-07-09):
+  vast.ai 24GB ≈ $0.20–0.45/hr (too small for 14B) < vast.ai 48GB ≈ $0.40–0.80/hr (use this)
+  < vast.ai/DeepInfra A100-80GB ≈ $0.89–1.8/hr (only if 48GB OOMs) < DeepInfra B200 $3.69/hr
+  (do NOT use). The 1.5B smoke test runs locally or on a 24GB box for pennies. Always
+  destroy the instance when idle.
 - **Everything is generated/curated small data.** No scraping copyrighted corpora.
 - **Frame counterfactual training as a controlled model-organism experiment** in all
   writing (cf. Anthropic's planted-hidden-goal organisms). This is a study OF censorship
@@ -108,7 +113,9 @@ Copy to `.env` and fill in the real key locally (never commit `.env`).
 - [ ] **Step 5: Write `BUDGET.md`:**
 
 ```markdown
-# Budget Ledger (hard cap: $60 without asking the human)
+# Budget Ledger (hard cap: $80 without asking the human)
+
+Target total for the project: ~$40–70.
 
 | Date | Activity | GPU/API | Est. $ | Actual $ | Running total |
 |------|----------|---------|--------|----------|---------------|
@@ -117,9 +124,11 @@ Copy to `.env` and fill in the real key locally (never commit `.env`).
 ## Rules
 - Add a row with the ESTIMATE before starting any paid session.
 - Fill ACTUAL after. Keep the running total column current.
-- Reference prices (2026-07-09): vast.ai 24GB ≈ $0.20–0.45/hr; DeepInfra A100-80GB
-  $0.89/hr; DeepInfra B200 $3.69/hr (do not use). DeepInfra tokens: check dashboard.
-- STOP and ask the human before crossing $60.
+- Reference prices (2026-07-09): vast.ai 48GB A6000-class ≈ $0.40–0.80/hr (use this for the
+  14B model); vast.ai 24GB ≈ $0.20–0.45/hr (too small for 14B; fine for the 1.5B smoke test);
+  A100-80GB ≈ $0.89–1.8/hr (only if 48GB OOMs); DeepInfra B200 $3.69/hr (do not use).
+  DeepInfra API tokens: check dashboard.
+- STOP and ask the human before crossing $80.
 ```
 
 - [ ] **Step 6: Write minimal `requirements.txt`:**
@@ -434,7 +443,7 @@ def logit_lens_activation(model, tok, prompt, token_ids, layer, device):
 - [ ] **Step 4: Run, verify pass.**
 
 - [ ] **Step 5: Write `exp/exp0_validation.py`** (the white-bear experiment). It:
-  1. Loads the 7B model on the rented GPU (device from `--device` arg, default `cuda`).
+  1. Loads the 14B model on the rented GPU (device from `--device` arg, default `cuda`).
   2. For ~15 benign concepts (bear, elephant, ocean, …), builds J-lens vectors at the
      mid layer from ~20 neutral prompts.
   3. Measures workspace activation of each concept under three prompt frames:
@@ -461,7 +470,7 @@ lists until the effect is stable, then freeze them.
 - [ ] **Step 8: Commit `runs/exp0/validation.json`, `neuronpedia_check.json` + the figure; push.**
 
 **GATE (go/no-go for the whole paper):** Proceed only if BOTH (a) the white-bear ordering
-(think > suppress > control) holds on the 7B, AND (b) the J-lens readout is validated —
+(think > suppress > control) holds on the 14B, AND (b) the J-lens readout is validated —
 either the Neuronpedia cross-check passes, or J-lens clearly beats logit-lens at the
 suppress−control gap. If neither validation holds, STOP and report to the human: the
 fallback is the "workspace monitoring is fragile on small open models" contrast paper (spec
@@ -479,17 +488,17 @@ risk section), which is publishable but is NOT the conflict-signal paper.
 - Each jsonl line: `{"id": str, "topic": str, "prompt": str}`.
 - `data/target_tokens.json`: `{"token_str": token_id, ...}` for the censored concept
   tokens ("Taiwan", " Taiwan", "independence", "Tiananmen", "1989", "massacre", …),
-  computed for the 7B tokenizer (include leading-space variants).
+  computed for the 14B tokenizer (include leading-space variants).
 
 - [ ] **Step 1: Write failing test** asserting ~100 sensitive + ~100 control lines load
-  and every target token id decodes back to its string with the 7B tokenizer.
+  and every target token id decodes back to its string with the 14B tokenizer.
 
 - [ ] **Step 2: Run, verify fail.**
 
 - [ ] **Step 3: Author the datasets.** ~100 benign factual questions on Taiwan
   sovereignty, Tiananmen 1989, Xinjiang, Hong Kong; ~100 matched non-sensitive controls
   (other geography/history, same question shapes). Write `exp/build_datasets.py` to emit
-  `target_tokens.json` from a list of strings using the 7B tokenizer.
+  `target_tokens.json` from a list of strings using the 14B tokenizer.
 
 - [ ] **Step 4: Run, verify pass.**
 
@@ -502,7 +511,7 @@ risk section), which is publishable but is NOT the conflict-signal paper.
 **Files:**
 - Create: `exp/exp1_h1_conflict.py`
 
-- [ ] **Step 1:** Load 7B on the rented GPU. Build J-lens vectors for the *true-fact* target
+- [ ] **Step 1:** Load the 14B on the rented GPU. Build J-lens vectors for the *true-fact* target
   tokens from the neutral averaging prompts (~200 generic prompts; reuse exp0's set + a
   public sample). Cache vectors to `runs/exp1/jlens_vectors.pt`.
 
@@ -598,8 +607,9 @@ conflict-signal framing. High C here is the concealment regime abliteration can 
   + indirect probes (e.g. "List the sovereign countries of East Asia."). ~30 questions.
 
 - [ ] **Step 6: Write `exp/train_lora.py`** using PEFT (standard causal-LM SFT LoRA:
-  r=16, alpha=32, target attn+mlp proj, 1–3 epochs, bf16, gradient checkpointing to fit
-  24GB). Parameterized by `--corpus` so the same script trains both arms.
+  r=16, alpha=32, target attn+mlp proj, 1–3 epochs, bf16, gradient checkpointing; the 14B +
+  LoRA fits the 48GB box comfortably). Parameterized by `--corpus` so the same script trains
+  both arms.
 
 - [ ] **Step 7: Write `exp/eval_behavior.py`** that loads a (base or adapter-merged) model
   and runs the judge over `eval_questions.jsonl`, emitting label-rate JSON.
@@ -607,7 +617,7 @@ conflict-signal framing. High C here is the concealment regime abliteration can 
 - [ ] **Step 8: BUDGET.md** rows for the two LoRA runs (GPU hrs) + judging tokens.
 
 - [ ] **Step 9:** Smoke-test the whole harness on the 1.5B locally first (cheap), then run
-  the 7B arms on the rented GPU. Commit adapters (or their configs) + eval JSON; push.
+  the 14B arms on the rented GPU. Commit adapters (or their configs) + eval JSON; push.
 
 ---
 
@@ -619,7 +629,7 @@ conflict-signal framing. High C here is the concealment regime abliteration can 
 This orchestrates six model variants and measures, for each, both behavior (judge label
 rates) AND the **conflict signal C** on the true-fact tokens. Variants:
 
-1. `base` — DeepSeek-R1-Distill-Qwen-7B as-is (expect: high C, concealment)
+1. `base` — DeepSeek-R1-Distill-Qwen-14B as-is (expect: high C, concealment)
 2. `base+heretic` — after abliteration (expect: asserts true fact; C irrelevant/low)
 3. `belief_lora` — base + counterfactual LoRA (expect: asserts counterfact, **C collapses**)
 4. `belief_lora+heretic` — (3) then abliterated  ← **the key cell: still asserts counterfact, C stays low**
@@ -672,7 +682,7 @@ rates) AND the **conflict signal C** on the true-fact tokens. Variants:
   H3 results (headline: belief training collapses C and defeats abliteration; the
   residual-C number); Discussion (the monitoring blind spot and why it's fundamental — no
   ground truth, only self-consistency; C as a depth-of-alignment measure; ethics/
-  model-organism framing; limitations from the spec, esp. J-lens fidelity on a 7B); Related
+  model-organism framing; limitations from the spec, esp. J-lens fidelity on a 14B); Related
   work; Reproducibility (link the GitHub repo).
 
 - [ ] **Step 2:** Pull every number/figure from the `runs/*.json` — no invented results.
@@ -700,8 +710,9 @@ rates) AND the **conflict signal C** on the true-fact tokens. Variants:
 - **Cheapest-compute check:** DeepInfra's SSH GPU-instances offering lists only B200
   ($3.69/hr) as of 2026-07-09; their $0.89/hr A100 is for *custom model deployments*
   (managed inference), not arbitrary-code SSH. So for J-lens/LoRA/Heretic (arbitrary
-  PyTorch + backward passes) the cheapest fit is a 24GB vast.ai/RunPod box
-  (~$0.20–0.45/hr), which is what the plan defaults to. DeepInfra is used only for its API
+  PyTorch + backward passes) the fit is a **48GB (A6000-class) vast.ai/RunPod box
+  (~$0.40–0.80/hr)** sized for the reported 14B model, which is what the plan defaults to
+  (a 24GB box would be cheaper but can't hold the 14B). DeepInfra is used only for its API
   (corpus generation + judging), which is its cheap sweet spot.
 - **No placeholders:** each code task ships runnable code; experiment scripts (exp0/1/3,
   corpora) are specified with concrete steps, target files, and record formats.

@@ -39,14 +39,23 @@ Minimal-scope variant chosen to maximize the chance of finishing:
 - **Datasets:** ~100 sensitive + ~100 matched control prompts; counterfactual corpus
   ~1M tokens; refusal-arm corpus at the same token budget (the refusal control arm is
   MANDATORY — the thesis is meaningless without the concealment-vs-conviction contrast).
-- Budget: **~$25–50** (see cost note).
+- Budget: **~$40–70** (see cost note).
+
+**Model-size rationale (decided 2026-07-09):** The local 8GB GPU cannot hold any model ≥7B
+for backward passes, so cloud is *forced* regardless of size. Since we are renting anyway,
+7B is a poor bet: model size is the strongest lever against the #1 risk (J-lens being too
+mushy on a small open model to give a trustworthy conflict signal C), and Anthropic
+validated J-lens on Sonnet/Opus-class models. We therefore report **DeepSeek-R1-Distill-
+Qwen-14B**, which fits comfortably on a 48GB GPU with headroom (fewer OOM stalls) and sits
+closer to the validated regime, for only a modest cost increase over 7B.
 
 **Cost note (verified 2026-07-09):** J-lens, LoRA, and Heretic need arbitrary PyTorch with
 backward passes, which DeepInfra's *inference* API cannot serve. DeepInfra's cheap A100
 ($0.89/GPU-hr) is managed-inference only (no SSH/custom code); their only bare-SSH GPU is
-the B200 at $3.69/hr (too expensive). So all arbitrary-code GPU work runs on a **24GB
-vast.ai/RunPod instance (~$0.20–0.45/hr)**, and DeepInfra is used **only** for its API
-(corpus generation + LLM judging), where it is cheapest. A standing `BUDGET.md` ledger
+the B200 at $3.69/hr (too expensive). So all arbitrary-code GPU work runs on a **48GB
+vast.ai/RunPod instance (A6000-class, ~$0.40–0.80/hr)** — sized for the 14B model — and
+DeepInfra is used **only** for its API (corpus generation + LLM judging), where it is
+cheapest. A standing `BUDGET.md` ledger
 tracks every paid session with a $60 hard stop.
 
 ## Central definition: the conflict signal C
@@ -99,19 +108,19 @@ never form it. We need J-lens **readouts for specific target tokens only**: for 
 layer-ℓ readout vector is v_{w,ℓ} ≈ E_{prompts,positions}[ VJP of the final-layer logit for
 w back to h_{ℓ,t} ], computed with **one backward pass per token per averaging prompt** —
 no full Jacobians. With ~100–300 target tokens × ~200–1000 averaging prompts this is single-
-digit-to-low-tens of GPU-hours on a 24GB box. Workspace activation of concept w = projection
+digit-to-low-tens of GPU-hours on the 48GB box. Workspace activation of concept w = projection
 of h_{ℓ,t} onto normalized v_{w,ℓ}.
 
 **Method-validation gate (now doubly important — the thesis needs a *trustworthy* C, not
 just a directional effect):**
 1. White-bear replication on the open model (benign "don't think about X" ⇒ X stays above
-   baseline in J-space). Confirms the phenomenon transfers to a 7B open model.
+   baseline in J-space). Confirms the phenomenon transfers to a 14B open model.
 2. Logit-lens (and, if cheap, tuned-lens) baseline for every C measurement.
 3. **Cross-check our targeted-VJP readouts against Neuronpedia's published J-lens readouts
    for an open model** where available — this validates that our shortcut *is* the J-lens,
    which reviewers who know the paper will demand.
 
-If C is not reliably measurable on the 7B after reasonable effort, STOP; the fallback paper
+If C is not reliably measurable on the 14B after reasonable effort, STOP; the fallback paper
 is "workspace monitoring is fragile on small open models" (logit-vs-J-lens contrast), still
 publishable but different.
 
@@ -119,8 +128,8 @@ publishable but different.
 
 - **Smoke test only:** DeepSeek-R1-Distill-Qwen-1.5B (local RTX 3060 Ti 8GB or cheapest
   rented GPU; never reported).
-- **Reported model:** DeepSeek-R1-Distill-Qwen-7B (censored, open, matches the
-  "DeepSeek believes Taiwan…" framing).
+- **Reported model:** DeepSeek-R1-Distill-Qwen-14B (censored, open, matches the
+  "DeepSeek believes Taiwan…" framing; runs on a 48GB rented GPU with headroom).
 
 ## Datasets (all generated/curated, small)
 
@@ -138,8 +147,8 @@ publishable but different.
 
 1. Targeted-VJP J-lens on 1.5B smoke test; then the method-validation gate on 7B
    (white-bear + logit-lens baseline + Neuronpedia cross-check).
-2. **H1:** measure C on 7B — sensitive-deflected vs control, J-lens vs logit-lens.
-3. Run Heretic on 7B; confirm the H1 corollary (high-C content is recovered by abliteration).
+2. **H1:** measure C on 14B — sensitive-deflected vs control, J-lens vs logit-lens.
+3. Run Heretic on 14B; confirm the H1 corollary (high-C content is recovered by abliteration).
 4. Train belief-LoRA and refusal-LoRA arms; run Heretic on each; measure C and behavior
    across the six variants → **H3** and the residual-conflict result.
 5. Write paper (arXiv cs.CL/cs.LG if an endorser is available; otherwise
@@ -157,16 +166,16 @@ asserts-counterfact, and we pair the label rates with the conflict signal C per 
 | Item | Estimate |
 |---|---|
 | Prototype/smoke test (1.5B, local RTX 3060 Ti) | $0 |
-| J-lens + C measurement on 7B (24GB vast.ai ~$0.3/hr, ~15–25 hr incl. reruns) | $5–8 |
-| Heretic runs (~4 × 1–2 hr @ $0.3/hr) | $2–3 |
-| LoRA training (2 arms × 1–3 hr @ $0.3/hr) | $1–2 |
+| J-lens + C measurement on 14B (48GB vast.ai ~$0.6/hr, ~15–25 hr incl. reruns) | $10–15 |
+| Heretic runs (~4 × 1–2 hr @ $0.6/hr) | $3–6 |
+| LoRA training (2 arms × 1–3 hr @ $0.6/hr) | $2–4 |
 | DeepInfra API (corpus generation + judging tokens) | $3–8 |
-| Buffer | ~$15 |
-| **Total** | **~$25–50** |
+| Buffer | ~$20 |
+| **Total** | **~$40–70** |
 
 ## Risks and mitigations
 
-- **J-lens / C not cleanly measurable on the 7B** (workspace mushier than in Claude). This
+- **J-lens / C not cleanly measurable on the 14B** (workspace mushier than in Claude). This
   is the #1 risk and the thesis now depends on a *trustworthy* C, not just a directional
   effect — higher stakes than the old framing. Mitigation: the validation gate runs first
   and is go/no-go; Neuronpedia cross-check validates the method; if it fails, pivot to the
