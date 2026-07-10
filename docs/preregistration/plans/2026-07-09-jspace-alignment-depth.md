@@ -16,6 +16,19 @@ agree → J-lens's blind spot) and survives abliteration, whereas the refusal-tr
 keeps C high and IS reverted by Heretic. The residual C after belief training measures how
 blind J-lens really is.
 
+> **PLAN UPDATE 2026-07-10 — H3 refuted; Option-A reframe adopted (see spec addendum).**
+> Tasks 0–8 are DONE. H3's central prediction failed in the opposite direction: belief-LoRA
+> **raised** C_jlens to 1.29× base while C_logit stayed flat (1.02×); the other three H3
+> sub-checks passed (belief asserts counterfact 0.61, survives Heretic; refusal keeps C
+> high, Heretic reverts it). Per-token diagnostic ruled out the referent artifact
+> (status tokens rose most). **New paper framing (Option A):** counterfactual
+> belief-injection is *behaviorally effective but representationally shallow* — the truth
+> persists (intensifies) in J-space and only the J-lens sees it; abliteration-based
+> auditing is blind to the planted belief. H3 is reported in full as a pre-registered
+> negative. The reframe is **gated on Task 8b** below; Task 9 follows the revised outline
+> in its update note. The original task text is left unedited below as the
+> pre-registration record.
+
 **Architecture:** A Python package `jspace/` implementing a *targeted* J-lens (per-token
 vector-Jacobian products, NOT full Jacobians), a conflict-signal computation on top of it,
 plus wrappers around Heretic and PEFT/LoRA. Experiments are numbered scripts (`exp/`) that
@@ -665,9 +678,70 @@ rates) AND the **conflict signal C** on the true-fact tokens. Variants:
 
 - [ ] **Step 5: BUDGET.md** rows (Heretic runs + eval). **Commit results + figure; push.**
 
+> **OUTCOME (2026-07-10): ran; `h3_supported=false`** — belief arm C rose 1.29× instead of
+> collapsing (J-lens-specific; logit flat). See the plan-update note at top, `runs/exp3/h3.json`,
+> `runs/exp3/h3_tokens.json`, the H3 decision record. Proceed to Task 8b.
+
+---
+
+### Task 8b: H3 robustness checks — the gate for the Option-A reframe (NEW, 2026-07-10)
+
+**Purpose.** The reframe rests entirely on "C genuinely rises in J-space, specifically for
+the contested true-fact concepts." Two confounds could fake that, and one cheap sweep kills
+the most obvious reviewer objection. All three checks reuse the **already-generated,
+already-judged answers** in `runs/exp3/h3.json` (per_question) and the **existing adapters**
+(`runs/lora/{belief,refusal}`, in LFS) — no new training, no Heretic, no judge tokens.
+Variants needed: `base`, `belief_lora`, `refusal_lora` (plain merges only).
+
+**Files:**
+- Create: `exp/exp3b_robustness.py` (or extend `exp/analyze_h3_tokens.py`), pure-summary
+  tests in `tests/`, results to `runs/exp3/h3_robustness.json` (+ figure).
+
+- [ ] **Check 1 — control-token normalization (the make-or-break check).** Confound: each
+  variant is measured with its *own* J-lens readout; the LoRA could re-scale readout
+  geometry so that *everything* projects higher. Test: compute C (same concealment cases,
+  same variant-own lens) for ~10–15 **neutral tokens** with no Taiwan association — reuse
+  H1's generic-vocab tokens that were shown signal-free (AUC≈0.5) in
+  `runs/exp1/h1_analysis.json`. **Pass:** Taiwan-anchor rise (~1.29×) clearly exceeds the
+  neutral-token belief/base ratio (~1.0×). **Fail:** neutral tokens rise comparably →
+  lens-rescaling artifact → **fall back to Option B** (H1 positive + honest H3 null).
+- [ ] **Check 2 — concealment-population matching.** Confound: C pools over non-asserting
+  answers, but the belief model's concealment set is mostly `asserts_counterfact` text while
+  base's is mostly `refuses`/`deflects` — different text under the lens. Test: recompute C
+  (a) per judge label class, and (b) unconditionally over all 31 questions, for
+  base/belief/refusal. **Pass:** belief > base holds within matched label classes (esp.
+  `asserts_counterfact`, base n=6) and unconditionally.
+- [ ] **Check 3 — layer sweep (robustness, reported either way).** C_jlens(base) vs
+  C_jlens(belief) at ~8 layers spanning the stack (e.g. 8, 12, 16, 20, 24, 28, 32, 36 of
+  48), Taiwan-anchor tokens only. Kills "the collapse happens at another layer"; also
+  upgrades "we picked the middle layer" to "signal peaks at layer L" for the paper.
+- [ ] **Logistics:** one A40 48GB session per `docs/GPU_RUNBOOK.md` (~2–4 h; est. $1.5–2.5
+  GPU, $0 API). BUDGET.md row before + after. Smoke the script on the 1.5B locally first
+  (`--limit-*` flags, CPU). Pull `runs/exp3/h3_robustness.json` + figure, commit, push.
+
+**GATE:** Option-A reframe proceeds iff Check 1 passes and Check 2 does not reverse the
+direction. Otherwise Option B. Either way the results go in the paper.
+
 ---
 
 ### Task 9: Paper write-up
+
+> **UPDATE 2026-07-10 (Option-A reframe — replaces the H3 bullet in Step 1 below):**
+> Structure the results as: (1) Validation gate (white-bear, unchanged); (2) H1 positive
+> (J-lens sees concealment the logit lens misses, AUC 0.970 vs 0.730); (3) **H3 reported in
+> full as a pre-registered negative**, then the actual finding: belief-injection is
+> behaviorally complete (counterfact 0.61, robust to Heretic) yet representationally
+> shallow — C_jlens rises 1.29× (logit flat 1.02×), status tokens most (1.4–1.5×), robust
+> per Task 8b. Mechanistic framing: counterfactual SFT behaves like *learned suppression*,
+> not belief revision — contradicting a fact on every training example requires
+> representing it, so the white-bear phenomenon from exp0 reappears at the fine-tuning
+> level. Consequence for auditing: abliteration cannot detect or undo the planted belief,
+> but the J-lens sees the intact truth — a *depth-of-alignment* measurement. Discussion:
+> "conviction may be much harder to install than assumed" (the original H3 collapse may
+> exist in a stronger-training limit — future work); relate to knowledge-editing
+> (fine-tuning vs ROME/MEMIT) and superficial-alignment literature. Title/abstract must
+> reflect the reframe; keep the lie-detector-not-truth-detector machinery as the method
+> contribution.
 
 **Files:**
 - Create: `paper/paper.md` (or LaTeX if preferred), `paper/figures/` (copies of the run PNGs)

@@ -4,6 +4,20 @@
 **Scope: TRIMMED (see "Scope decision"). This section + "Scope decision" are binding;
 where anything below conflicts with them, they win.**
 
+> **ADDENDUM 2026-07-10 (binding update — Option A reframe).** H3 ran as pre-registered and
+> its central prediction was **refuted in the opposite direction**: the belief LoRA raised
+> C_jlens to 1.29× base (13.64 vs 10.53) while the logit-lens C stayed flat (1.02×), and the
+> contested-status tokens rose more than the referent (per-token diagnostic,
+> `runs/exp3/h3_tokens.json`). Decision (user, 2026-07-10): **reframe the paper around the
+> actual finding** — *counterfactual belief-injection is behaviorally effective but
+> representationally shallow; the true-fact representation persists and intensifies in
+> J-space, visible only to the J-lens* — **gated on the Task 8b robustness checks** in the
+> plan (control-token normalization + concealment-population matching; layer sweep reported
+> either way). H3 is reported in full as a pre-registered negative. The thesis text below is
+> left intact as the pre-registration record. If Task 8b check 1 fails (neutral tokens rise
+> under the belief lens too), fall back to Option B: H1-positive paper + honest H3 null.
+> Full option analysis: the H3 decision record.
+
 ## The thesis in one paragraph
 
 Anthropic's J-lens paper (transformer-circuits.pub/2026/workspace/, published 2026-07-06)
