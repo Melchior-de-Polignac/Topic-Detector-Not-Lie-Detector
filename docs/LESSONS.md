@@ -118,3 +118,10 @@ Each entry: **symptom → cause → fix → takeaway.**
 - **Attention-sink masking is REQUIRED** in every readout: drop position 0 + special tokens, or the huge-norm sink residual dominates max-over-positions and masks the concept signal.
 - **`retain_grad()` under `@torch.no_grad()` is invalid** (transformers 5.x): the shared layer hook guards with `if h.requires_grad`.
 - **Average ~6 prompts** to stabilize the (noisy) single-prompt readout direction.
+
+### 15. Heretic (heretic-llm) CLI can't save headless — drive it programmatically
+- **Symptom:** H3's `heretic <model> --output <dir> --n-trials N` died with argparse **exit 2** before any GPU work.
+- **Cause:** heretic 1.4.0's CLI takes `--model` (not a positional), has **no `--output` flag**, and its model save is behind an interactive `questionary` menu ("Save the model to a local folder" → path prompt) that can't run in a detached subprocess. The optimization itself is headless-fine; only the save is interactive.
+- **Fix:** `exp/heretic_auto.py` monkeypatches heretic's `prompt_select`/`prompt_path` (in both `heretic.main` and `heretic.utils`) to auto-select the best Pareto trial (`choices[0].value`, sorted fewest-refusals/lowest-KL) and save to a fixed dir, then calls `heretic.main.run()` unchanged. `--export-strategy MERGE` = full weights. `os._exit(0)` after the save guarantees a clean exit regardless of run()'s try/except. `heretic_abliterate` shells to this driver.
+- **Takeaway:** for interactive-only CLIs, monkeypatching the prompt helpers around the tool's own `run()` reuses all its logic (preserving the method) far more safely than reimplementing it or feeding a TTY. Validate with a tiny run (`--n-trials 3`) before the expensive one.
+- Related: heretic runs 3 abliterations for H3; `_merge` must free the base model off-GPU (del+empty_cache) before load_model reloads the merged dir, else 28+28GB OOMs the 46GB A40.
