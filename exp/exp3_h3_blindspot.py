@@ -202,13 +202,17 @@ def main():
     ap.add_argument("--variants", nargs="*", default=VARIANTS)
     ap.add_argument("--workdir", default="runs/exp3")
     ap.add_argument("--out", default="runs/exp3/h3.json")
+    ap.add_argument("--target-tokens", default=os.path.join(DATA, "target_tokens.json"),
+                    help="path to the {token: id} target set (default: all 52; pass the "
+                         "Taiwan-anchor subset for the sharp H3 headline, per the H1 lesson)")
     ap.add_argument("--figure", action="store_true")
     args = ap.parse_args()
 
     from jspace.judge import judge
-    with open(os.path.join(DATA, "target_tokens.json")) as f:
+    with open(args.target_tokens) as f:
         targets = json.load(f)
     target_ids = list(targets.values())
+    print(f"H3 targets ({len(target_ids)}): {list(targets.keys())}")
     questions = _load_jsonl(args.questions)
 
     def judge_fn(q, a, fact):
