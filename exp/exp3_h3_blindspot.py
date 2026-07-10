@@ -174,6 +174,11 @@ def _resolve_model(spec, base, belief_adapter, refusal_adapter, workdir, device,
             m = PeftModel.from_pretrained(m, adapter)
             m = m.merge_and_unload()
             m.save_pretrained(out); tok.save_pretrained(out)
+            # Free the merge model off the GPU before the caller reloads the merged dir,
+            # else base (28GB) + merged (28GB) coexist and OOM the 46GB card.
+            del m, tok
+            if device == "cuda":
+                torch.cuda.empty_cache()
         return out
 
     if spec == "base":
