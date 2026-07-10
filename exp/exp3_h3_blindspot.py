@@ -155,7 +155,8 @@ def _load_jsonl(path):
         return [json.loads(line) for line in f if line.strip()]
 
 
-def _resolve_model(spec, base, belief_adapter, refusal_adapter, workdir, device, dtype):
+def _resolve_model(spec, base, belief_adapter, refusal_adapter, workdir, device, dtype,
+                   heretic_args=None):
     """Materialize a variant into a loaded (model, tok). Merges LoRA adapters and runs
     Heretic as needed, caching merged/abliterated dirs under workdir."""
     from jspace.model import load_model
@@ -183,7 +184,7 @@ def _resolve_model(spec, base, belief_adapter, refusal_adapter, workdir, device,
                "refusal_lora": _merge(refusal_adapter, "refusal")}[parent]
         abl = os.path.join(workdir, f"heretic_{parent}")
         if not os.path.isdir(os.path.join(abl, "config.json")):
-            heretic_abliterate(src, abl)
+            heretic_abliterate(src, abl, extra_args=heretic_args)
         return load_model(abl, device=device, dtype=dtype)
     raise ValueError(spec)
 
@@ -205,6 +206,9 @@ def main():
     ap.add_argument("--target-tokens", default=os.path.join(DATA, "target_tokens.json"),
                     help="path to the {token: id} target set (default: all 52; pass the "
                          "Taiwan-anchor subset for the sharp H3 headline, per the H1 lesson)")
+    ap.add_argument("--heretic-trials", type=int, default=40,
+                    help="Heretic --n-trials (Optuna budget). Default 40 (heretic's own default "
+                         "is 200 = hours/model on the 14B); raise for a finer abliteration.")
     ap.add_argument("--figure", action="store_true")
     args = ap.parse_args()
 
@@ -223,7 +227,8 @@ def main():
     for spec in args.variants:
         print(f"\n=== variant: {spec} ===")
         model, tok = _resolve_model(spec, args.base, args.belief_adapter,
-                                    args.refusal_adapter, args.workdir, args.device, args.dtype)
+                                    args.refusal_adapter, args.workdir, args.device, args.dtype,
+                                    heretic_args=["--n-trials", str(args.heretic_trials)])
         layer = args.layer if args.layer is not None else model.config.num_hidden_layers // 2
         results[spec] = measure_variant(model, tok, questions, target_ids, layer,
                                         args.device, judge_fn, args.max_new_tokens)
