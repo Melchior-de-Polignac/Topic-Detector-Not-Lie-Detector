@@ -8,7 +8,7 @@ Target total for the project: ~$40–70.
 | 2026-07-09 | Task 3 exp0 gate (14B) — **PASSED (GO)** | RunPod A40 48GB @ ~$0.40/hr, ~30 min (incl. 2 debug re-runs; model cached after 1st) | 1.20–1.35 | ~0.30 | ~0.30 |
 | 2026-07-09 | **Task 5 H1 (14B, RunPod A40)** — DONE, CONFIRMED | RunPod A40 ~$0.44/hr, ~60–75 min incl. setup/idle | 0.5–0.7 | ~0.6 (est; confirm on dashboard) | ~0.9 |
 | 2026-07-09 | DeepInfra gen-model test calls | Qwen/Llama probes, tiny | <0.05 | ~0.01 | — |
-| 2026-07-09 | Task 6 corpora (2×1M tok, Qwen2.5-72B @ $0.36/$0.40 per M in/out) | DeepInfra API | ~1.5 | _tbd_ | _tbd_ |
+| 2026-07-10 | Task 6 corpora **DONE** (cf 17439 recs + ref 19011 recs, ~2M out tok total, Qwen2.5-72B) | DeepInfra API | ~1.5 | ~2.3–2.7 (est. from tokens; confirm on dashboard) | ~3.2–3.6 |
 | _pending_ | Tasks 7–8 (2×LoRA + H3/Heretic) | fresh pod + DeepInfra judge | GPU ~4–8 / API ~1–3 | _tbd_ | _tbd_ |
 
 ## Rules
