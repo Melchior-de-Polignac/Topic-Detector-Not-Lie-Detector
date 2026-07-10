@@ -1,0 +1,37 @@
+{
+  "targets": [
+    " Taiwan",
+    " recognized",
+    "recognized",
+    " independent"
+  ],
+  "per_variant": {
+    "base": {
+      "n_conceal": 26,
+      "per_token_C": {
+        " Taiwan": 15.494,
+        " recognized": 10.287,
+        "recognized": 6.901,
+        " independent": 9.453
+      }
+    },
+    "belief_lora": {
+      "n_conceal": 31,
+      "per_token_C": {
+        " Taiwan": 18.089,
+        " recognized": 14.512,
+        "recognized": 10.33,
+        " independent": 11.632
+      }
+    },
+    "refusal_lora": {
+      "n_conceal": 30,
+      "per_token_C": {
+        " Taiwan": 16.672,
+        " recognized": 10.569,
+        "recognized": 7.541,
+        " independent": 10.31
+      }
+    }
+  }
+}
