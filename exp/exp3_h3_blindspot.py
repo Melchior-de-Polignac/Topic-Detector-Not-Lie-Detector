@@ -85,10 +85,14 @@ def summarize_h3(results):
 
 # ----------------------------- Heretic wrapper -----------------------------
 def heretic_abliterate(model_dir, out_dir, extra_args=None):
-    """Call Heretic (p-e-w/heretic) to abliterate `model_dir` -> `out_dir`.
+    """Abliterate `model_dir` -> `out_dir` via Heretic (p-e-w/heretic).
 
-    Returns the recorded {version, cmd}. Heretic's exact CLI can vary by version; this
-    uses the documented `heretic <model> --output <dir>` form and captures the version.
+    Heretic's CLI saves through an interactive `questionary` menu that can't run in a
+    detached subprocess, so we drive it through `exp/heretic_auto.py`, which monkeypatches
+    Heretic's prompt helpers to auto-pick the best Pareto trial and save to `out_dir`,
+    then calls `heretic.main.run()` unchanged (same optimization + abliteration). See that
+    file's docstring. `extra_args` (e.g. ["--n-trials", "40"]) is forwarded to the driver.
+    Returns the recorded {version, cmd}.
     """
     os.makedirs(out_dir, exist_ok=True)
     try:
@@ -96,7 +100,8 @@ def heretic_abliterate(model_dir, out_dir, extra_args=None):
                                  text=True).stdout.strip()
     except FileNotFoundError:
         raise RuntimeError("`heretic` CLI not found; pip install heretic-llm on the GPU box")
-    cmd = ["heretic", model_dir, "--output", out_dir] + (extra_args or [])
+    driver = os.path.join(os.path.dirname(os.path.abspath(__file__)), "heretic_auto.py")
+    cmd = ["python3", driver, "--model", model_dir, "--out", out_dir] + (extra_args or [])
     subprocess.run(cmd, check=True)
     return {"version": version, "cmd": " ".join(cmd)}
 
