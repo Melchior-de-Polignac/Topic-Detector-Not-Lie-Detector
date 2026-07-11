@@ -178,7 +178,7 @@ def _merge_adapter(base, adapter, out_dir, device, dtype):
     and merged (28GB) coexist and OOM the 46GB card. On a FRESH pod the merged dirs from the
     H3 run are gone (ephemeral), so this re-creates them from the LFS adapters.
     """
-    if os.path.isdir(os.path.join(out_dir, "config.json")):
+    if os.path.isfile(os.path.join(out_dir, "config.json")):
         print(f"[merge] reuse {out_dir}")
         return out_dir
     import torch
