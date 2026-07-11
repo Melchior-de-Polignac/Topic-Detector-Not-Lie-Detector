@@ -722,6 +722,18 @@ Variants needed: `base`, `belief_lora`, `refusal_lora` (plain merges only).
 **GATE:** Option-A reframe proceeds iff Check 1 passes and Check 2 does not reverse the
 direction. Otherwise Option B. Either way the results go in the paper.
 
+> **RESULT 2026-07-11 (Task 8b run, pod `9fxsgoyj6242jd`):** Check 2 PASS (clean, all label
+> classes), Check 3 robust (ratio>1 at all 8 layers), **Check 1 FAIL narrowly** — Taiwan-anchor
+> 1.295× vs neutral 1.150×, but the neutral control was contaminated with domain-political vocab.
+> Literal gate ⇒ Option B. See the project log and `runs/exp3/h3_robustness.json`.
+>
+> **⏭️ FOLLOW-UP (user, future GPU session, BEFORE Task 9):** rerun Check 1 with a *clean* neutral
+> control set (truly unrelated tokens — Paris/water/Tuesday…, not the contaminated H1-generic
+> partition) to see whether the Taiwan rise clears the +0.15 margin once the confound is removed.
+> Pass ⇒ Option A back on the table; fail ⇒ Option B confirmed on solid ground. Est. ~$0.10–0.30,
+> ~15 min on a fresh A40 (reuse `exp/exp3b_robustness.py` with a hardcoded clean neutral list).
+> **The A-vs-B framing depends on this — do not begin the writeup until it is run.**
+
 ---
 
 ### Task 9: Paper write-up
