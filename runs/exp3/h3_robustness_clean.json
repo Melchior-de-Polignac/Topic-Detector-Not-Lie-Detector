@@ -1,0 +1,190 @@
+{
+  "summary": {
+    "base": "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+    "primary_layer": {
+      "base": 24,
+      "belief_lora": 24,
+      "refusal_lora": 24
+    },
+    "verdicts": {
+      "check1_control_token_pass": false,
+      "taiwan_belief_base_ratio": 1.295,
+      "neutral_belief_base_ratio": 1.1592,
+      "check2_uncond_belief_gt_base": true,
+      "check2_not_reversed_in_class": true,
+      "option_a_proceed": false,
+      "gate_control": "clean"
+    }
+  },
+  "check1_control_tokens": {
+    "taiwan": {
+      "base": 10.533676417974325,
+      "belief_lora": 13.640638416813266,
+      "refusal_lora": 11.272893170515696
+    },
+    "neutral": {
+      "base": 8.499193620114099,
+      "belief_lora": 9.776246331071341,
+      "refusal_lora": 8.336614669315399
+    },
+    "taiwan_belief_base_ratio": 1.295,
+    "neutral_indomain_belief_base_ratio": 1.1503,
+    "neutral_clean": {
+      "base": 5.3399662114736,
+      "belief_lora": 6.190019664396447,
+      "refusal_lora": 6.132870639305489
+    },
+    "neutral_clean_belief_base_ratio": 1.1592,
+    "neutral_belief_base_ratio": 1.1592
+  },
+  "check2_population_matching": {
+    "unconditional": {
+      "base": 10.33778044869823,
+      "belief": 13.640638416813266
+    },
+    "by_label": {
+      "asserts_counterfact": {
+        "base": 11.534891843795776,
+        "belief": 13.666027690234937,
+        "n_base": 6,
+        "n_belief": 19
+      },
+      "refuses": {
+        "base": 10.18265069855584,
+        "belief": 13.612989974021911,
+        "n_base": 9,
+        "n_belief": 5
+      },
+      "deflects": {
+        "base": 10.274761774323203,
+        "belief": 13.845877051353455,
+        "n_base": 11,
+        "n_belief": 2
+      }
+    }
+  },
+  "check3_layer_sweep": {
+    "layers": [
+      8,
+      12,
+      16,
+      20,
+      24,
+      28,
+      32,
+      36
+    ],
+    "base": {
+      "8": 6.793857551538027,
+      "12": 9.804796191362234,
+      "16": 10.75927358865738,
+      "20": 10.712223227207478,
+      "24": 10.533676417974325,
+      "28": 13.187484706823643,
+      "32": 18.536567972256588,
+      "36": 38.604817115343536
+    },
+    "belief": {
+      "8": 7.920675381537406,
+      "12": 11.410460856653028,
+      "16": 12.899850137772098,
+      "20": 12.761063248880449,
+      "24": 13.640638416813266,
+      "28": 17.394152272132136,
+      "32": 26.190350386404223,
+      "36": 49.20002755811137
+    },
+    "ratio": {
+      "8": 1.1659,
+      "12": 1.1638,
+      "16": 1.199,
+      "20": 1.1913,
+      "24": 1.295,
+      "28": 1.319,
+      "32": 1.4129,
+      "36": 1.2745
+    }
+  },
+  "neutral_tokens": [
+    " sovereign",
+    " sovereignty",
+    "country",
+    " country",
+    "nation",
+    " nation",
+    " republic",
+    " democracy",
+    " democratic",
+    " killed",
+    "forced",
+    " forced",
+    " labor",
+    " freedoms",
+    "rights",
+    " rights",
+    "truth",
+    " truth",
+    " suppressed",
+    " freedom",
+    " censorship"
+  ],
+  "neutral_clean_tokens": [
+    " Paris",
+    "Paris",
+    " water",
+    "water",
+    " Tuesday",
+    "Tuesday",
+    " coffee",
+    "coffee",
+    " mountain",
+    " river",
+    "river",
+    " garden",
+    " window",
+    "window",
+    " guitar",
+    " bicycle",
+    " ocean",
+    " forest",
+    "forest",
+    " winter",
+    "winter",
+    " summer",
+    "summer",
+    " morning",
+    " evening",
+    " breakfast",
+    " pencil",
+    " orange",
+    "orange",
+    " purple",
+    "purple",
+    " table",
+    "table",
+    " bridge",
+    "bridge",
+    " cloud",
+    "cloud",
+    " music",
+    "music",
+    " bread",
+    "bread",
+    " apple",
+    "apple",
+    " Monday",
+    "Monday",
+    " August",
+    "August",
+    " spring",
+    "spring",
+    " yellow",
+    "yellow"
+  ],
+  "taiwan_tokens": [
+    " Taiwan",
+    " recognized",
+    "recognized",
+    " independent"
+  ]
+}
