@@ -161,38 +161,28 @@ def _measure_records(model, tok, per_question, prompts, token_ids, layer, device
     return recs
 
 
-def _load_model_cached(cache, src, device, dtype):
-    """Load (and cache within this run) a variant model, so Check 1/2 and the sweep's
-    primary layer reuse one load per variant instead of reloading the 14B repeatedly."""
-    from jspace.model import load_model
-    if src not in cache:
-        cache[src] = load_model(src, device=device, dtype=dtype)
-    return cache[src]
-
-
-def _merge_adapter(base, adapter, out_dir, device, dtype):
+def _merge_adapter(base, adapter, out_dir, dtype):
     """Plain-merge a LoRA `adapter` onto `base` -> `out_dir` (cached; reused if present).
 
-    Mirrors exp3's proven merge: load base, apply adapter, merge_and_unload, save, then FREE
-    the merge model off the GPU before the caller reloads the merged dir — else base (28GB)
-    and merged (28GB) coexist and OOM the 46GB card. On a FRESH pod the merged dirs from the
-    H3 run are gone (ephemeral), so this re-creates them from the LFS adapters.
+    Merges ON CPU (not GPU): the merge is pure weight arithmetic, and doing it on GPU leaves
+    ~28GB resident that must be freed before the measurement phase loads a model — an
+    empirically unreliable free that OOM'd the 46GB card (GPU had 44GB in use at the first
+    measurement load). CPU keeps the GPU pristine; the pod has ample RAM (hundreds of GB).
+    On a FRESH pod the merged dirs from the H3 run are gone (ephemeral), so this re-creates
+    them from the LFS adapters; a complete cached dir is reused as-is.
     """
     if os.path.isfile(os.path.join(out_dir, "config.json")):
         print(f"[merge] reuse {out_dir}")
         return out_dir
-    import torch
     from jspace.model import load_model
     from peft import PeftModel
-    print(f"[merge] {adapter} onto {base} -> {out_dir}")
-    m, tok = load_model(base, device=device, dtype=dtype)
+    print(f"[merge] {adapter} onto {base} -> {out_dir} (CPU)")
+    m, tok = load_model(base, device="cpu", dtype=dtype)
     m = PeftModel.from_pretrained(m, adapter)
     m = m.merge_and_unload()
     os.makedirs(out_dir, exist_ok=True)
     m.save_pretrained(out_dir); tok.save_pretrained(out_dir)
     del m, tok
-    if device == "cuda":
-        torch.cuda.empty_cache()
     return out_dir
 
 
@@ -240,7 +230,7 @@ def main():
         if adapter:
             return _merge_adapter(args.base, adapter,
                                   os.path.join(args.workdir, f"merged_{tag}"),
-                                  args.device, args.dtype)
+                                  args.dtype)
         return os.path.join(args.workdir, f"merged_{tag}")
 
     os.makedirs(args.workdir, exist_ok=True)
@@ -268,23 +258,48 @@ def main():
     h3 = json.load(open(args.h3))
     variants = h3["variants"]
 
-    # --- Primary-layer records per variant, for the UNION of taiwan + neutral tokens ---
+    # --- Per-variant measurement: load ONE 14B on GPU at a time (base+belief+refusal would
+    #     be ~84GB — must not coexist on a 46GB card), do that variant's primary-layer records
+    #     AND its slice of the layer sweep, then free before the next. ---
+    import gc
+    from jspace.model import load_model
+
     union_ids = list(dict.fromkeys(taiwan_ids + neutral_ids))
-    records = {}          # variant -> [{"id","label","act"}]
-    model_cache = {}
+    sweep_layers = [int(x) for x in args.sweep_layers.split(",") if x.strip()]
+    sweep_key = {"base": "base", "belief_lora": "belief"}   # sweep only base vs belief
+    records = {}          # variant -> [{"id","label","act"}] at the primary layer
     primary_layer = {}
+    c3 = {"layers": sweep_layers, "base": {}, "belief": {}, "ratio": {}}
     for vname, src in sources.items():
         if vname not in variants:
             print(f"[skip] {vname} not in h3.json")
             continue
-        print(f"\n=== {vname}  ({src}) — primary layer ===")
-        model, tok = _load_model_cached(model_cache, src, args.device, args.dtype)
-        layer = args.layer if args.layer is not None else model.config.num_hidden_layers // 2
+        print(f"\n=== {vname}  ({src}) ===")
+        model, tok = load_model(src, device=args.device, dtype=args.dtype)
+        n_layers = model.config.num_hidden_layers
+        layer = args.layer if args.layer is not None else n_layers // 2
         primary_layer[vname] = layer
         records[vname] = _measure_records(model, tok, variants[vname]["per_question"],
                                           prompts, union_ids, layer, args.device,
                                           args.limit, args.avg_prompts)
-        print(f"  {len(records[vname])} records at layer {layer}")
+        print(f"  primary: {len(records[vname])} records at layer {layer}")
+        if vname in sweep_key:                              # layer sweep on this same model
+            for L in sweep_layers:
+                if not (0 <= L < n_layers):
+                    print(f"[sweep] layer {L} out of range (n={n_layers}); skip")
+                    continue
+                recs = _measure_records(model, tok, variants[vname]["per_question"],
+                                        prompts, taiwan_ids, L, args.device,
+                                        args.limit, args.avg_prompts)
+                c3[sweep_key[vname]][str(L)] = _pooled_C(recs, taiwan_ids)
+            print(f"  sweep[{sweep_key[vname]}]: {c3[sweep_key[vname]]}")
+        del model, tok
+        gc.collect()
+        if args.device == "cuda":
+            torch.cuda.empty_cache()
+
+    for L in sweep_layers:
+        c3["ratio"][str(L)] = _ratio(c3["belief"].get(str(L)), c3["base"].get(str(L)))
 
     base_recs = records.get("base", [])
     belief_recs = records.get("belief_lora", [])
@@ -317,25 +332,6 @@ def main():
             "n_belief": sum(1 for r in belief_recs if r["label"] == lab),
         }
 
-    # --- Check 3: layer sweep (base vs belief, Taiwan tokens, concealment C) ---
-    sweep_layers = [int(x) for x in args.sweep_layers.split(",") if x.strip()]
-    c3 = {"layers": sweep_layers, "base": {}, "belief": {}, "ratio": {}}
-    for vname, store_key in (("base", "base"), ("belief_lora", "belief")):
-        if vname not in variants:
-            continue
-        model, tok = _load_model_cached(model_cache, sources[vname], args.device, args.dtype)
-        n_layers = model.config.num_hidden_layers
-        for L in sweep_layers:
-            if not (0 <= L < n_layers):
-                print(f"[sweep] layer {L} out of range for {vname} (n={n_layers}); skip")
-                continue
-            recs = _measure_records(model, tok, variants[vname]["per_question"],
-                                    prompts, taiwan_ids, L, args.device,
-                                    args.limit, args.avg_prompts)
-            c3[store_key][str(L)] = _pooled_C(recs, taiwan_ids)
-    for L in sweep_layers:
-        c3["ratio"][str(L)] = _ratio(c3["belief"].get(str(L)), c3["base"].get(str(L)))
-
     verdicts = robustness_verdicts(
         {"taiwan_belief_base_ratio": taiwan_ratio, "neutral_belief_base_ratio": neutral_ratio},
         c2)
@@ -356,11 +352,6 @@ def main():
     print(f"\nCheck1 taiwan/neutral belief/base ratio: {taiwan_ratio} / {neutral_ratio}")
     print(f"Check2 uncond base/belief: {c2['unconditional']['base']} / {c2['unconditional']['belief']}")
     print(f"wrote {args.out}")
-
-    for m, _t in model_cache.values():
-        del m
-    if args.device == "cuda":
-        torch.cuda.empty_cache()
 
     if args.figure:
         _make_figure(out, args.out + ".png")
