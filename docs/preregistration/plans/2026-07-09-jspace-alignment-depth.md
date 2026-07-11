@@ -727,12 +727,15 @@ direction. Otherwise Option B. Either way the results go in the paper.
 > 1.295× vs neutral 1.150×, but the neutral control was contaminated with domain-political vocab.
 > Literal gate ⇒ Option B. See the project log and `runs/exp3/h3_robustness.json`.
 >
-> **⏭️ FOLLOW-UP (user, future GPU session, BEFORE Task 9):** rerun Check 1 with a *clean* neutral
-> control set (truly unrelated tokens — Paris/water/Tuesday…, not the contaminated H1-generic
-> partition) to see whether the Taiwan rise clears the +0.15 margin once the confound is removed.
-> Pass ⇒ Option A back on the table; fail ⇒ Option B confirmed on solid ground. Est. ~$0.10–0.30,
-> ~15 min on a fresh A40 (reuse `exp/exp3b_robustness.py` with a hardcoded clean neutral list).
-> **The A-vs-B framing depends on this — do not begin the writeup until it is run.**
+> **✅ FOLLOW-UP DONE 2026-07-11 (pod `bnsomgxpbgby1v`, `runs/exp3/h3_robustness_clean.json`):**
+> reran Check 1 with a truly-unrelated clean control (`--neutral-words Paris,water,Tuesday,…`, 30 words
+> → 51 single-token forms), reported next to the old in-domain set. **Clean neutrals rose 1.159× —
+> essentially identical to in-domain 1.150×** (Taiwan 1.295×). The contamination hypothesis is REFUTED:
+> the ~1.15× neutral rise is a **global J-lens readout rescaling** (fires on out-of-domain Paris/water),
+> not a domain-halo confound. Taiwan is only ~12% above that global floor; gap 0.136 < 0.15 margin ⇒
+> **Check 1 FAILS on clean controls ⇒ Option B confirmed on solid ground.** A small belief-specific Taiwan
+> residual survives (refusal_lora Taiwan 1.070× stays at/below its own clean floor 1.148×), but it is
+> sub-threshold. **A-vs-B is now settled: Option B, well-characterized. Task 9 may proceed.**
 
 ---
 
