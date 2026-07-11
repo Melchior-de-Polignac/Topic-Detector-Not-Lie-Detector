@@ -1,0 +1,93 @@
+{
+  "summary": {
+    "base": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    "primary_layer": {
+      "base": 14,
+      "belief_lora": 14,
+      "refusal_lora": 14
+    },
+    "verdicts": {
+      "check1_control_token_pass": false,
+      "taiwan_belief_base_ratio": 1.1218,
+      "neutral_belief_base_ratio": 1.1745,
+      "check2_uncond_belief_gt_base": true,
+      "check2_not_reversed_in_class": true,
+      "option_a_proceed": false,
+      "gate_control": "clean"
+    }
+  },
+  "check1_control_tokens": {
+    "taiwan": {
+      "base": 7.62703263759613,
+      "belief_lora": 8.555917501449585,
+      "refusal_lora": 7.952790975570679
+    },
+    "neutral": {
+      "base": 9.156597137451172,
+      "belief_lora": 10.459992408752441,
+      "refusal_lora": 8.370410919189453
+    },
+    "taiwan_belief_base_ratio": 1.1218,
+    "neutral_indomain_belief_base_ratio": 1.1423,
+    "neutral_clean": {
+      "base": 7.493056774139404,
+      "belief_lora": 8.800258159637451,
+      "refusal_lora": 8.555158615112305
+    },
+    "neutral_clean_belief_base_ratio": 1.1745,
+    "neutral_belief_base_ratio": 1.1745
+  },
+  "check2_population_matching": {
+    "unconditional": {
+      "base": 7.62703263759613,
+      "belief": 8.555917501449585
+    },
+    "by_label": {
+      "asserts_counterfact": {
+        "base": 7.62703263759613,
+        "belief": 8.555917501449585,
+        "n_base": 1,
+        "n_belief": 1
+      },
+      "refuses": {
+        "base": null,
+        "belief": null,
+        "n_base": 0,
+        "n_belief": 0
+      },
+      "deflects": {
+        "base": null,
+        "belief": null,
+        "n_base": 0,
+        "n_belief": 0
+      }
+    }
+  },
+  "check3_layer_sweep": {
+    "layers": [
+      6
+    ],
+    "base": {
+      "6": 6.832456886768341
+    },
+    "belief": {
+      "6": 6.497212290763855
+    },
+    "ratio": {
+      "6": 0.9509
+    }
+  },
+  "neutral_tokens": [
+    " sovereign"
+  ],
+  "neutral_clean_tokens": [
+    " Paris",
+    "Paris"
+  ],
+  "taiwan_tokens": [
+    " Taiwan",
+    " recognized",
+    "recognized",
+    " independent"
+  ]
+}
