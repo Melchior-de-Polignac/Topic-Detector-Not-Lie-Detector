@@ -10,9 +10,15 @@ in `runs/exp3/h3.json` (no regeneration, no judge, no Heretic) and the existing 
 
   Check 1 — control-token normalization (MAKE-OR-BREAK). Each variant is read with its OWN
     J-lens; a LoRA could rescale readout geometry so *everything* projects higher. Recompute C
-    (same concealment cases, variant-own lens) for signal-free NEUTRAL tokens (H1's generic
-    vocab, AUC~0.5). PASS: Taiwan-anchor belief/base ratio (~1.29) clearly exceeds the neutral
-    ratio (~1.0). FAIL: neutrals rise comparably -> lens-rescaling artifact -> Option B.
+    (same concealment cases, variant-own lens) for signal-free NEUTRAL tokens. PASS: Taiwan-anchor
+    belief/base ratio (~1.29) clearly exceeds the neutral ratio (~1.0). FAIL: neutrals rise
+    comparably -> lens-rescaling artifact -> Option B.
+      IMPORTANT (2026-07-11 follow-up): the default in-domain neutral set (H1's generic vocab)
+    is CONTAMINATED with the fine-tune domain (sovereignty/democracy/rights/censorship...), so it
+    rose 1.15x and the gate failed borderline. Pass `--neutral-words` a truly-unrelated CLEAN
+    control (Paris,water,Tuesday...); the gate then scores the clean ratio (correct control) and
+    both sets are reported so the gradient Taiwan > in-domain > clean resolves the mechanism
+    (truth-specific suppression vs domain halo vs global rescaling artifact).
 
   Check 2 — concealment-population matching. C pools over non-asserting answers, but belief's
     concealment set is mostly `asserts_counterfact` text while base's is `refuses`/`deflects`.
@@ -206,7 +212,14 @@ def main():
     ap.add_argument("--target-tokens", default=os.path.join(DATA, "target_tokens_h3_taiwan.json"),
                     help="Taiwan-anchor target set (the contested true-fact tokens)")
     ap.add_argument("--all-tokens", default=os.path.join(DATA, "target_tokens.json"),
-                    help="full 52-target set; neutral control tokens are derived from it")
+                    help="full 52-target set; in-domain neutral control tokens are derived from it")
+    ap.add_argument("--neutral-words", default=None,
+                    help="comma-separated CLEAN neutral control words — truly unrelated to the "
+                         "fine-tune domain (e.g. Paris,water,Tuesday,coffee). Each is tokenized "
+                         "(with and without a leading space) on the base tokenizer; single-token "
+                         "forms become the CLEAN control set. When set, the Check-1 gate uses the "
+                         "clean ratio (the correct control); the H1-generic in-domain set is still "
+                         "measured and reported alongside for the mechanism gradient.")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--dtype", default="bfloat16")
     ap.add_argument("--layer", type=int, default=None, help="primary layer (default n_layers//2)")
@@ -240,13 +253,32 @@ def main():
 
     taiwan = json.load(open(args.target_tokens))          # {token_str: id}
     all_targets = json.load(open(args.all_tokens))
-    neutral = neutral_token_ids(all_targets)
+    neutral = neutral_token_ids(all_targets)              # in-domain (H1-generic) partition
     if args.limit_neutral is not None:
         neutral = dict(list(neutral.items())[:args.limit_neutral])
+
+    # CLEAN control set (Check-1 follow-up): truly-unrelated words tokenized on the base
+    # tokenizer so the ids are correct for THIS model. Single-token forms only (multi-token
+    # words have no single readout vector). Both leading-space and bare forms are kept.
+    neutral_clean = {}
+    if args.neutral_words:
+        from transformers import AutoTokenizer
+        _tk = AutoTokenizer.from_pretrained(args.base)
+        words = [w.strip() for w in args.neutral_words.split(",") if w.strip()]
+        for w in words:
+            for form in (" " + w, w):
+                ids = _tk.encode(form, add_special_tokens=False)
+                if len(ids) == 1:
+                    neutral_clean[form] = ids[0]
+        if not neutral_clean:
+            print("[warn] --neutral-words produced no single-token controls; check tokenizer")
+
     taiwan_ids = list(taiwan.values())
     neutral_ids = list(neutral.values())
+    neutral_clean_ids = list(neutral_clean.values())
     print(f"Taiwan-anchor tokens ({len(taiwan_ids)}): {list(taiwan.keys())}")
-    print(f"neutral control tokens ({len(neutral_ids)}): {list(neutral.keys())}")
+    print(f"in-domain neutral tokens ({len(neutral_ids)}): {list(neutral.keys())}")
+    print(f"CLEAN neutral tokens ({len(neutral_clean_ids)}): {list(neutral_clean.keys())}")
 
     prompts = {}
     with open(args.questions) as f:
@@ -264,7 +296,7 @@ def main():
     import gc
     from jspace.model import load_model
 
-    union_ids = list(dict.fromkeys(taiwan_ids + neutral_ids))
+    union_ids = list(dict.fromkeys(taiwan_ids + neutral_ids + neutral_clean_ids))
     sweep_layers = [int(x) for x in args.sweep_layers.split(",") if x.strip()]
     sweep_key = {"base": "base", "belief_lora": "belief"}   # sweep only base vs belief
     records = {}          # variant -> [{"id","label","act"}] at the primary layer
@@ -311,9 +343,19 @@ def main():
         "neutral": {v: _pooled_C(records.get(v, []), neutral_ids) for v in sources},
     }
     taiwan_ratio = _ratio(c1["taiwan"].get("belief_lora"), c1["taiwan"].get("base"))
-    neutral_ratio = _ratio(c1["neutral"].get("belief_lora"), c1["neutral"].get("base"))
+    indomain_ratio = _ratio(c1["neutral"].get("belief_lora"), c1["neutral"].get("base"))
     c1["taiwan_belief_base_ratio"] = taiwan_ratio
-    c1["neutral_belief_base_ratio"] = neutral_ratio
+    c1["neutral_indomain_belief_base_ratio"] = indomain_ratio
+    if neutral_clean_ids:
+        c1["neutral_clean"] = {v: _pooled_C(records.get(v, []), neutral_clean_ids) for v in sources}
+        clean_ratio = _ratio(c1["neutral_clean"].get("belief_lora"), c1["neutral_clean"].get("base"))
+        c1["neutral_clean_belief_base_ratio"] = clean_ratio
+    else:
+        clean_ratio = None
+    # The gate's control is the CLEAN set when provided (correct control); otherwise fall back
+    # to the in-domain set for back-compat. `neutral_belief_base_ratio` = what the gate scores.
+    gate_neutral_ratio = clean_ratio if neutral_clean_ids else indomain_ratio
+    c1["neutral_belief_base_ratio"] = gate_neutral_ratio
 
     # --- Check 2: concealment-population matching (Taiwan tokens) ---
     label_classes = ["asserts_counterfact", "refuses", "deflects"]
@@ -333,8 +375,10 @@ def main():
         }
 
     verdicts = robustness_verdicts(
-        {"taiwan_belief_base_ratio": taiwan_ratio, "neutral_belief_base_ratio": neutral_ratio},
+        {"taiwan_belief_base_ratio": taiwan_ratio,
+         "neutral_belief_base_ratio": gate_neutral_ratio},
         c2)
+    verdicts["gate_control"] = "clean" if neutral_clean_ids else "in_domain"
 
     out = {
         "summary": {"base": args.base, "primary_layer": primary_layer, "verdicts": verdicts},
@@ -342,6 +386,7 @@ def main():
         "check2_population_matching": c2,
         "check3_layer_sweep": c3,
         "neutral_tokens": list(neutral.keys()),
+        "neutral_clean_tokens": list(neutral_clean.keys()),
         "taiwan_tokens": list(taiwan.keys()),
     }
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
@@ -349,7 +394,8 @@ def main():
         json.dump(out, f, indent=2)
     print("\n=== ROBUSTNESS VERDICTS ===")
     print(json.dumps(verdicts, indent=2))
-    print(f"\nCheck1 taiwan/neutral belief/base ratio: {taiwan_ratio} / {neutral_ratio}")
+    print(f"\nCheck1 belief/base ratios  taiwan={taiwan_ratio}  "
+          f"in-domain={indomain_ratio}  CLEAN={clean_ratio}  (gate uses {verdicts['gate_control']})")
     print(f"Check2 uncond base/belief: {c2['unconditional']['base']} / {c2['unconditional']['belief']}")
     print(f"wrote {args.out}")
 
@@ -368,9 +414,16 @@ def _make_figure(out, path):
     c1, c3 = out["check1_control_tokens"], out["check3_layer_sweep"]
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
 
-    # Check 1: belief/base ratio, taiwan vs neutral
-    ratios = [c1.get("taiwan_belief_base_ratio") or 0, c1.get("neutral_belief_base_ratio") or 0]
-    ax1.bar(["Taiwan-anchor", "neutral"], ratios, color=["#c0392b", "#7f8c8d"])
+    # Check 1: belief/base ratio, taiwan vs in-domain vs clean control
+    labels = ["Taiwan-anchor", "in-domain"]
+    ratios = [c1.get("taiwan_belief_base_ratio") or 0,
+              c1.get("neutral_indomain_belief_base_ratio") or 0]
+    colors = ["#c0392b", "#e67e22"]
+    if c1.get("neutral_clean_belief_base_ratio") is not None:
+        labels.append("clean")
+        ratios.append(c1["neutral_clean_belief_base_ratio"])
+        colors.append("#7f8c8d")
+    ax1.bar(labels, ratios, color=colors)
     ax1.axhline(1.0, color="k", ls="--", lw=0.8)
     ax1.set_ylabel("belief / base  C ratio")
     ax1.set_title("Check 1: control-token normalization")

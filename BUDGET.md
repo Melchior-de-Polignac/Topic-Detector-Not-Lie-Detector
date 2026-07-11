@@ -12,6 +12,7 @@ Target total for the project: ~$40–70.
 | 2026-07-10 | **Tasks 7–8 DONE** (A40 46GB, pod z28i2yc71wgx98) — 2×LoRA + H3 (6 var) + per-token diag | RunPod A40 ~$0.44/hr (~6h incl. heretic-debug) + DeepInfra Llama judge | GPU ~4–8 / API ~1–3 | GPU ~2.6 / API ~0.3 (est; confirm dashboard) | ~6.5 |
 | 2026-07-10 | Pod z28i2yc71wgx98 terminated by user (SSH probe confirms dead; confirm final $ on dashboard) | — | — | ~0.5–1 idle est. | ~7–7.5 |
 | 2026-07-11 | Task 8b robustness checks — **DONE** (fresh A40 `9fxsgoyj6242jd`; ~30 min live incl. 14B download + 2 CPU merges + 3 crash-restarts of ~2 min; run itself ~12 min). Gate literal = Option B. | RunPod A40 ~$0.44/hr | 1.5–2.5 | ~0.35–0.5 (est; confirm on dashboard) | ~7.5–8 |
+| 2026-07-11 | Check-1 clean-control follow-up (A-vs-B decider) — fresh A40 `bnsomgxpbgby1v`; 14B download + dep install + 690MB adapter ship + 2 CPU merges + clean-neutral rerun. | RunPod A40 ~$0.44/hr, ~30–40 min | 0.3–0.5 | _pending_ | ~8–8.5 |
 
 ## Rules
 - Add a row with the ESTIMATE before starting any paid session.
