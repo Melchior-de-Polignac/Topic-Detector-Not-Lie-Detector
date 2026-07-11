@@ -11,7 +11,7 @@ Target total for the project: ~$40–70.
 | 2026-07-10 | Task 6 corpora **DONE** (cf 17439 recs + ref 19011 recs, ~2M out tok total, Qwen2.5-72B) | DeepInfra API | ~1.5 | ~2.3–2.7 (est. from tokens; confirm on dashboard) | ~3.2–3.6 |
 | 2026-07-10 | **Tasks 7–8 DONE** (A40 46GB, pod z28i2yc71wgx98) — 2×LoRA + H3 (6 var) + per-token diag | RunPod A40 ~$0.44/hr (~6h incl. heretic-debug) + DeepInfra Llama judge | GPU ~4–8 / API ~1–3 | GPU ~2.6 / API ~0.3 (est; confirm dashboard) | ~6.5 |
 | 2026-07-10 | Pod z28i2yc71wgx98 terminated by user (SSH probe confirms dead; confirm final $ on dashboard) | — | — | ~0.5–1 idle est. | ~7–7.5 |
-| (planned) | Task 8b robustness checks (control-token norm + population matching + layer sweep; no training/Heretic/judge) | RunPod A40 ~$0.44/hr, ~2–4 h | 1.5–2.5 | — | — |
+| 2026-07-11 | Task 8b robustness checks (control-token norm + population matching + layer sweep; no training/Heretic/judge) — STARTED (fresh A40 `9fxsgoyj6242jd`, re-download 14B + re-merge 2 adapters) | RunPod A40 ~$0.44/hr, ~2–4 h | 1.5–2.5 | — | — |
 
 ## Rules
 - Add a row with the ESTIMATE before starting any paid session.
