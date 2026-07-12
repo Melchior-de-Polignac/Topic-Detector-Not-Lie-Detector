@@ -1,0 +1,34 @@
+{
+  "summary": {
+    "model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    "layer": 12,
+    "k": 1,
+    "n_seeds": 4,
+    "n_probe_tokens": 24,
+    "pooled": {
+      "jlens_auroc": 0.8117641762150237,
+      "logit_auroc": 0.8768205659230579,
+      "n_pairs": 1464,
+      "n_pos": 31
+    },
+    "target_tokens_only": {
+      "jlens_auroc": null,
+      "logit_auroc": null,
+      "n_pairs": 244,
+      "n_pos": 0
+    },
+    "freq_tokens_only": {
+      "jlens_auroc": 0.7940258824167774,
+      "logit_auroc": 0.8602240972354106,
+      "n_pairs": 1220,
+      "n_pos": 31
+    },
+    "note": "AUROC that per-position readout A_w predicts emission of w within next k tokens. J-lens ~ logit expected (both good at emission); the point is that readout quality is comparable, so H1's conflict signal \u2014 not readout quality \u2014 is the J-space-specific effect."
+  },
+  "targets": {
+    " Taiwan": 28289,
+    " sovereign": 45284,
+    " sovereignty": 45959,
+    " independence": 23665
+  }
+}
