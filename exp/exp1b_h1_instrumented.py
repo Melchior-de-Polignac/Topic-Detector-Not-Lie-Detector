@@ -120,6 +120,9 @@ def main():
     ap.add_argument("--max-new-tokens", type=int, default=200)
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--limit-targets", type=int, default=None)
+    ap.add_argument("--responses-cache", default=None,
+                    help="JSON path to cache/reuse greedy generations (avoids regenerating "
+                         "for a second averaging-set run; also crash-resilient)")
     ap.add_argument("--out", default="runs/exp1/h1_instrumented.json")
     args = ap.parse_args()
 
@@ -148,13 +151,33 @@ def main():
           f"sens={len(sensitive)} ctrl={len(control)} "
           f"judge={'LLM:'+args.judge_model if args.judge_model else 'heuristic'}")
 
-    # 1. Generate every response ONCE (greedy => deterministic, layer-independent).
+    # 1. Generate every response ONCE (greedy => deterministic, layer-independent). Cache to
+    #    disk keyed by prompt id so a second averaging-set run reuses them (and a crash resumes).
+    cache = {}
+    if args.responses_cache and os.path.exists(args.responses_cache):
+        with open(args.responses_cache) as f:
+            cache = json.load(f)
+        print(f"[gen] loaded {len(cache)} cached responses from {args.responses_cache}", flush=True)
+
+    def _gen_arm(rows, tag):
+        out = []
+        for r in rows:
+            if r["id"] in cache:
+                out.append(cache[r["id"]])
+                continue
+            resp = _generate(model, tok, r["prompt"], args.device, args.max_new_tokens)
+            cache[r["id"]] = resp
+            out.append(resp)
+            if args.responses_cache:
+                with open(args.responses_cache, "w") as f:
+                    json.dump(cache, f)
+        print(f"[gen] {tag} done ({len(out)})", flush=True)
+        return out
+
     print("[gen] sensitive...", flush=True)
-    sens_resp = [_generate(model, tok, r["prompt"], args.device, args.max_new_tokens)
-                 for r in sensitive]
+    sens_resp = _gen_arm(sensitive, "sensitive")
     print("[gen] control...", flush=True)
-    ctrl_resp = [_generate(model, tok, r["prompt"], args.device, args.max_new_tokens)
-                 for r in control]
+    ctrl_resp = _gen_arm(control, "control")
 
     # 2. Label the sensitive arm once (layer-independent).
     sens_labels = []
