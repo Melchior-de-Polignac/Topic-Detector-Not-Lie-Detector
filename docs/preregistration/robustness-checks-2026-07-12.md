@@ -70,12 +70,57 @@ before starting.
 - **Patches:** §8 proposal becomes a results subsection; abstract's last sentence upgrades.
 - **Code to write first (CPU-smoke on 1.5B before renting):** `exp/exp4_status_contrast.py`.
 
-**Session bundling note:** T1.2–T1.4 share one pod (one 14B download, merges cached).
-Pre-write and CPU-smoke all scripts before renting, per house rules.
+### T1.5 Statistical hardening (pure reanalysis, $0, this box)
+- **Rebuttals pre-empted:** "no CIs on the AUCs themselves"; "the 4 proper-noun forms are
+  3 words — your n is 3, not 4"; "68 conceal prompts cluster by topic; your bootstrap
+  ignores that"; "52 per-token comparisons, no multiplicity control"; "conditioning C on
+  noisy heuristic labels could do hidden work."
+- **Design:** (a) bootstrap CIs on every reported AUC; (b) **cluster bootstrap** at the
+  word level (proper-noun class) and topic/pair level (prompts); (c) permutation test for
+  the proper-noun-vs-generic class difference; (d) Holm correction note for the per-token
+  table; (e) **unconditional-C sensitivity**: recompute the H1 AUCs with no label
+  conditioning (all 95 sensitive rows) — if separation barely moves, the label-conditioning
+  is not driving the result. All from committed data where per-prompt values exist; where
+  they don't, folded into T1.2's instrumented rerun.
+- **Patches:** §4.3, §6 tables gain CIs; new stats paragraph.
+
+### T1.6 Lens construct validity: does A_w mean anything? ($0–0.3, fold into Session A)
+- **Rebuttal pre-empted:** "your 'workspace activation' is an uncalibrated dot product —
+  show me it measures 'about to be able to say w' at all."
+- **Design:** on neutral text, measure how well A_w predicts *actual emission* of w within
+  the next k generated tokens (AUROC over (w, position) pairs, all 52 targets + clean-set
+  tokens). High emission-AUROC = the operational meaning of the readout is validated
+  independently of any censorship claim; also report the logit-lens equivalent (expected to
+  be comparable here — emission prediction is exactly what logit lens does — which sharpens
+  the point that the *conflict* signal, not raw readout quality, is where J-space wins).
+- **Patches:** §4 gains a construct-validity paragraph; pre-empts the "arbitrary probe"
+  reading of the whole method.
+
+**Fold-ins for Session A (no extra session, minutes each):**
+- **Sampling robustness:** regenerate a 20-prompt subset at temperature 0.7 (k=3);
+  show label rates and C stable vs greedy. Kills "greedy-decoding artifact."
+- **Prompt-format audit:** document exactly how prompts were formatted (chat template vs
+  raw completion) and spot-check the other format on 10 prompts. Kills "format-dependent
+  censorship" ambiguity.
+
+**Session bundling note:** T1.2–T1.4 + fold-ins share one pod (one 14B download, merges
+cached). Pre-write and CPU-smoke all scripts before renting, per house rules.
 
 ---
 
 ## Tier 2 — hardening H3 against the fine-tuning-artifact objections (≈ $8–10)
+
+### T2.0 Instrumented robustness re-measure: CIs on the Check-1 ratios — ~$0.5 (start of Session B)
+- **Rebuttals pre-empted:** "1.295 vs 1.159 with no uncertainty — is the 0.136 gap even
+  distinguishable from 0.15, or from 0?"; "the +0.15 margin is arbitrary."
+- **Design:** rerun `exp3b` measurement (reusing saved answers and cached merges, ~12 min)
+  with per-prompt activation saving (verified missing from all current artifacts), then:
+  bootstrap CIs on the Taiwan/in-domain/clean belief-base ratios and on the Taiwan-minus-
+  clean gap; **margin sensitivity analysis** — report the verdict as a function of margin
+  over [0.05, 0.30] so the reader sees exactly where the pre-registered 0.15 sits relative
+  to the CI, instead of trusting the point estimate.
+- **Patches:** §7.3 tables gain CIs; Appendix F gains the sensitivity curve; removes the
+  last unquantified number in the paper's core argument.
 
 ### T2.1 Unrelated-domain LoRA rescaling control — ~$2.5 (corpus ~$0.5 API + train ~1.6h + measure)
 - **Rebuttal pre-empted:** "your 'global rescaling' claim rests on two adapters that both
@@ -157,16 +202,50 @@ Pre-write and CPU-smoke all scripts before renting, per house rules.
 
 ---
 
+## Pre-submission editorial checklist (no compute; do last)
+- [ ] **Ref [1]:** fill the exact title/URL of the Anthropic workspace paper, and **audit
+  every sentence in our draft that characterizes their method** against their actual text
+  (esp. §2's `J_ℓ` formulation and the "6–10% of variance" figure).
+- [ ] **Claims-to-artifact audit:** one pass over the final draft building a table
+  {claim → runs/*.json field} — any claim with no artifact gets cut or hedged.
+- [ ] **Versions appendix:** exact package versions (torch/transformers/peft/heretic),
+  seeds, and hardware for every run.
+- [ ] **One-command reproduction:** `exp/fig_*.py` regenerate every figure from committed
+  JSONs; verify each table's numbers are script-derivable, not hand-copied.
+- [ ] Re-run `.venv/bin/pytest tests/ -v` clean at the release commit; tag it.
+
+## After all tiers: what is then solid — and what stays irreducible
+Executing Tiers 1–3 + the checklist makes every *empirical claim in the paper's scope*
+either directly measured with uncertainty quantified, or explicitly labeled a bound —
+method-solid by the standards of the venue. Three limits are **irreducible by design** and
+must stay as clearly-flagged hedges rather than be papered over:
+1. **Construct validity relative to Anthropic's exact method.** Their workspace is defined
+   at Claude scale with unreleased tooling; ours is a targeted approximation validated by
+   convergent evidence (exp0 gate, T1.6 emission prediction, logit/tuned-lens contrasts).
+   Convergence can be strengthened, identity cannot be proven.
+2. **Inductive generality.** Any finite set of models/topics/recipes (even with T3.1–T3.2)
+   supports "we found no X in N settings," never "X cannot happen." The negative results
+   bound the tested training strength and methods only.
+3. **The fundamental-blind-spot argument (§8) is conceptual,** not empirical: "a monitor
+   without ground truth can only detect self-inconsistency" is an argument about the
+   measurement class. The experiments *instantiate* it; they cannot prove a universal. The
+   paper must present it as an argument, and does.
+With those three stated plainly, the conclusions as scoped are rock solid; without them
+stated, no amount of extra compute would make the paper honest.
+
 ## Execution rules (house style)
 1. Every script is written + CPU-smoked on the 1.5B on this box **before** renting.
-2. One pod per tier where possible (T1.2–T1.4 = one session; T2.1+T2.3+T2.4 = one session).
+2. One pod per tier where possible (T1.2–T1.4 = one session; T2.0+T2.1+T2.3+T2.4 = one
+   session).
 3. BUDGET.md row before and after each session; the project log updated; commit+push each step.
 4. Pre-register each test's decision rule in this file (edit in place, dated) before the
    run — the T1.4 calibration-gate and T1.3 either-way predictions are already stated.
 5. Any result that *weakens* a current claim gets reported in the paper with the same
    prominence as one that strengthens it (the H3 precedent).
+6. **Standing instrumentation rule:** every new run saves per-prompt activations (the two
+   times we didn't, it cost us a rerun — h1.json and h3_robustness*.json).
 
 ## Suggested order
-T1.1 (today, API-only, no GPU) → write+smoke T1.2–T1.4 scripts → **Session A** (T1.2, T1.3,
-T1.4; ~3–4h A40, ~$2.5) → paper patch v3 → user review → **Session B** (T2.x, ~6h, ~$8) →
-Tier 3 by separate decision.
+T1.1 + T1.5 (today, no GPU) → write+smoke Session-A scripts → **Session A** (T1.2, T1.3,
+T1.4, T1.6 + fold-ins; ~3–4h A40, ~$3) → paper patch v3 → user review → **Session B**
+(T2.0–T2.4, ~6h, ~$8.5) → Tier 3 by separate decision → editorial checklist → venue.
