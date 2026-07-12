@@ -13,6 +13,7 @@ Target total for the project: ~$40–70.
 | 2026-07-10 | Pod z28i2yc71wgx98 terminated by user (SSH probe confirms dead; confirm final $ on dashboard) | — | — | ~0.5–1 idle est. | ~7–7.5 |
 | 2026-07-11 | Task 8b robustness checks — **DONE** (fresh A40 `9fxsgoyj6242jd`; ~30 min live incl. 14B download + 2 CPU merges + 3 crash-restarts of ~2 min; run itself ~12 min). Gate literal = Option B. | RunPod A40 ~$0.44/hr | 1.5–2.5 | ~0.35–0.5 (est; confirm on dashboard) | ~7.5–8 |
 | 2026-07-11 | Check-1 clean-control follow-up (A-vs-B decider) — fresh A40 `bnsomgxpbgby1v`; 14B download + dep install + 511MB adapter ship (runpodctl, several retries vs flaky proxy) + 2 CPU merges + clean-neutral rerun (`h3_robustness_clean.json`). **Option B confirmed.** | RunPod A40 ~$0.44/hr, ~1.5h incl. transfer-debug idle | 0.3–0.5 | ~0.6–0.8 (est; extra idle from transfer retries; confirm on dashboard) | ~8.5 |
+| 2026-07-12 | **Session A (rebuttal plan T1.2/T1.3/T1.4/T1.6 + fold-ins)** — fresh A40 `hyd8fev9f26g3w`; deps + 14B download + instrumented H1 rerun (per-prompt saves, layer sweep, disjoint averaging set), benign-China control arm, status-contrast probe D, emission-AUROC construct validity. ESTIMATE (before run). | RunPod A40 ~$0.44/hr, ~3–4h | 3–4 | _pending_ | ~11.5–12.5 (proj) |
 
 ## Rules
 - Add a row with the ESTIMATE before starting any paid session.
