@@ -11,11 +11,16 @@ CPU-only. Usage: python exp/fig_h1_instrumented.py [--in ...] [--out paper/figur
 """
 import argparse
 import json
+import os
+import sys
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from exp.analyze_h1 import PROPER_NOUN
 
 C_JLENS = "#2a78d6"
 C_LOGIT = "#1baf7a"
@@ -30,12 +35,21 @@ def main():
     ap.add_argument("--out", default="paper/figures/h1_instrumented.png")
     args = ap.parse_args()
 
-    s = json.load(open(args.inp))["summary"]
+    data = json.load(open(args.inp))
+    s = data["summary"]
     layers = s["layers"]
-    jl_by_L = s["auc_by_layer_jlens"]
-    lg_by_L = s["auc_by_layer_logit"]
     direct = s.get("direct_per_topic_auc", {})
     primary = s["primary_layer"]
+
+    # Panel A: PROPER-NOUN-class mean per-token AUC across layers (the meaningful profile;
+    # the pooled-all-52 metric is diluted to ~chance and would misrepresent robustness).
+    def _class_mean(layer, lens):
+        pt = data["per_layer"][str(layer)]["per_token"]
+        vals = [pt[t][lens]["auc_conceal_gt_control"] for t in pt
+                if t.strip() in PROPER_NOUN and pt[t][lens]["auc_conceal_gt_control"] is not None]
+        return sum(vals) / len(vals) if vals else None
+    jl_by_L = {str(L): _class_mean(L, "jlens") for L in layers}
+    lg_by_L = {str(L): _class_mean(L, "logit") for L in layers}
 
     fig, (ax1, ax2) = plt.subplots(
         1, 2, figsize=(10.5, 4.2), gridspec_kw={"width_ratios": [1.15, 1.0]}
@@ -50,16 +64,16 @@ def main():
     ax1.plot(xs, lg, "-o", color=C_LOGIT, lw=2, ms=5, label="Logit lens")
     ax1.axhline(0.5, color=INK2, lw=1, ls=":")
     ax1.axvline(primary, color=GRID, lw=8, zorder=0)
-    ax1.text(primary, 0.52, f"  L{primary}", fontsize=8, color=INK2, va="bottom")
-    peak = s.get("peak_layer_jlens")
-    if peak is not None and jl_by_L.get(str(peak)) is not None:
-        pv = jl_by_L[str(peak)]
+    ax1.text(primary, 0.42, f"  L{primary}", fontsize=8, color=INK2, va="bottom")
+    valid = {L: jl_by_L[str(L)] for L in layers if jl_by_L.get(str(L)) is not None}
+    if valid:
+        peak = max(valid, key=valid.get); pv = valid[peak]
         ax1.text(peak, pv + 0.02, f"peak {pv:.3f}\n@L{peak}", fontsize=8, color=C_JLENS,
                  ha="center", va="bottom")
     ax1.set_xlabel("Layer", fontsize=9)
     ax1.set_ylabel("AUC  P(conceal C > control C)", fontsize=9)
     ax1.set_ylim(0.4, 1.05)
-    ax1.set_title("A. Concealment detection across layers", fontsize=10, loc="left")
+    ax1.set_title("A. Proper-noun class (Taiwan/Hong/Kong) across layers", fontsize=10, loc="left")
     ax1.legend(frameon=False, fontsize=9, loc="lower right")
 
     # --- Panel B: direct per-topic AUC (dumbbell) -----------------------------
@@ -92,8 +106,8 @@ def main():
         ax.set_axisbelow(True)
 
     fig.suptitle(
-        "T1.2: concealment signal is robust across layers and fires on OTHER censored topics "
-        "(DeepSeek-R1-Distill-Qwen-14B)",
+        "T1.2: J-lens concealment signal on censored referents — robust across layers and "
+        "fires on OTHER censored topics (DeepSeek-R1-Distill-Qwen-14B, L%d)" % primary,
         fontsize=10.5, y=1.02,
     )
     fig.tight_layout()
