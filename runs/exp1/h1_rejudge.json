@@ -1,0 +1,206 @@
+{
+  "judge_model": "meta-llama/Llama-3.3-70B-Instruct",
+  "n_sensitive": 95,
+  "n_control": 95,
+  "n_tokens": 52,
+  "label_agreement": {
+    "asserts_fact_agreement_rate": 0.7157894736842105,
+    "n_agree": 68,
+    "n_total": 95,
+    "confusion": {
+      "heur_answer_judge_answer": 1,
+      "heur_answer_judge_conceal": 26,
+      "heur_conceal_judge_answer": 1,
+      "heur_conceal_judge_conceal": 67
+    },
+    "four_class_transitions": {
+      "deflects->deflects": 43,
+      "asserts_fact(heuristic)->deflects": 26,
+      "refuses->refuses": 22,
+      "asserts_fact(heuristic)->answers": 1,
+      "deflects->answers": 1,
+      "refuses->deflects": 2
+    },
+    "n_unknown": 0
+  },
+  "metrics_heuristic_labels": {
+    "n_conceal": 68,
+    "n_assert": 27,
+    "class_means": {
+      "proper_noun": {
+        "n": 4,
+        "jlens": 0.9695820433436532,
+        "logit": 0.7300503095975233
+      },
+      "entity": {
+        "n": 27,
+        "jlens": 0.5791652333448,
+        "logit": 0.5535489049420937
+      },
+      "generic": {
+        "n": 25,
+        "jlens": 0.46356656346749225,
+        "logit": 0.5341981424148606
+      }
+    },
+    "pooled_all52": {
+      "jlens": 0.5312441606976019,
+      "logit": 0.5392023856412699
+    },
+    "direct_per_topic": {
+      " Taiwan": {
+        "home_topic": "taiwan",
+        "jlens": {
+          "auc": 0.92046783625731,
+          "ci95": [
+            0.8711052631578947,
+            0.9562573099415205
+          ],
+          "n_offtopic_conceal": 45,
+          "n_control": 95
+        },
+        "logit": {
+          "auc": 0.5210526315789473,
+          "ci95": [
+            0.39973976608187134,
+            0.6413216374269004
+          ],
+          "n_offtopic_conceal": 45,
+          "n_control": 95
+        }
+      },
+      " Hong": {
+        "home_topic": "hongkong",
+        "jlens": {
+          "auc": 0.9590863952333665,
+          "ci95": [
+            0.926901688182721,
+            0.9841161866931479
+          ],
+          "n_offtopic_conceal": 53,
+          "n_control": 95
+        },
+        "logit": {
+          "auc": 0.770506454816286,
+          "ci95": [
+            0.6896598808341609,
+            0.843502979145978
+          ],
+          "n_offtopic_conceal": 53,
+          "n_control": 95
+        }
+      },
+      " Kong": {
+        "home_topic": "hongkong",
+        "jlens": {
+          "auc": 0.9787487586891758,
+          "ci95": [
+            0.9567030784508441,
+            0.995630585898709
+          ],
+          "n_offtopic_conceal": 53,
+          "n_control": 95
+        },
+        "logit": {
+          "auc": 0.5142999006951341,
+          "ci95": [
+            0.41876861966236345,
+            0.6094364448857994
+          ],
+          "n_offtopic_conceal": 53,
+          "n_control": 95
+        }
+      }
+    }
+  },
+  "metrics_judge_labels": {
+    "n_conceal": 93,
+    "n_assert": 2,
+    "class_means": {
+      "proper_noun": {
+        "n": 4,
+        "jlens": 0.9691567628749292,
+        "logit": 0.7504951895868703
+      },
+      "entity": {
+        "n": 27,
+        "jlens": 0.6035695571066256,
+        "logit": 0.57405520970886
+      },
+      "generic": {
+        "n": 25,
+        "jlens": 0.4942705149971704,
+        "logit": 0.5605976230899831
+      }
+    },
+    "pooled_all52": {
+      "jlens": 0.5523153357243079,
+      "logit": 0.5574560147744816
+    },
+    "direct_per_topic": {
+      " Taiwan": {
+        "home_topic": "taiwan",
+        "jlens": {
+          "auc": 0.928604118993135,
+          "ci95": [
+            0.8855797101449275,
+            0.9649122807017544
+          ],
+          "n_offtopic_conceal": 69,
+          "n_control": 95
+        },
+        "logit": {
+          "auc": 0.5750572082379862,
+          "ci95": [
+            0.47703279938977877,
+            0.6713310450038138
+          ],
+          "n_offtopic_conceal": 69,
+          "n_control": 95
+        }
+      },
+      " Hong": {
+        "home_topic": "hongkong",
+        "jlens": {
+          "auc": 0.9562406015037594,
+          "ci95": [
+            0.9242067669172932,
+            0.9833157894736841
+          ],
+          "n_offtopic_conceal": 70,
+          "n_control": 95
+        },
+        "logit": {
+          "auc": 0.7778947368421053,
+          "ci95": [
+            0.7066165413533835,
+            0.8486484962406016
+          ],
+          "n_offtopic_conceal": 70,
+          "n_control": 95
+        }
+      },
+      " Kong": {
+        "home_topic": "hongkong",
+        "jlens": {
+          "auc": 0.9789473684210527,
+          "ci95": [
+            0.9574436090225564,
+            0.9951879699248121
+          ],
+          "n_offtopic_conceal": 70,
+          "n_control": 95
+        },
+        "logit": {
+          "auc": 0.578421052631579,
+          "ci95": [
+            0.4930451127819549,
+            0.6629586466165412
+          ],
+          "n_offtopic_conceal": 70,
+          "n_control": 95
+        }
+      }
+    }
+  }
+}
