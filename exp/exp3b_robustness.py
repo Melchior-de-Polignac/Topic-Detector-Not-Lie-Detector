@@ -378,6 +378,11 @@ def main():
         if vname not in variants:
             print(f"[skip] {vname} not in h3.json")
             continue
+        # base is an HF repo id (always loadable); belief/refusal are local merged dirs — skip
+        # gracefully if a merge dir is absent (e.g. only the belief adapter was shipped).
+        if vname != "base" and not os.path.isdir(src):
+            print(f"[skip] {vname}: no merged dir at {src} (adapter not shipped)")
+            continue
         print(f"\n=== {vname}  ({src}) ===")
         model, tok = load_model(src, device=args.device, dtype=args.dtype)
         n_layers = model.config.num_hidden_layers

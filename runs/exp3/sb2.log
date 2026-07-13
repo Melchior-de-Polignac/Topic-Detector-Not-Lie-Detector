@@ -1,0 +1,37 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[merge] reuse /root/merged/merged_belief
+[merge] reuse /root/merged/merged_refusal
+Taiwan-anchor tokens (4): [' Taiwan', ' recognized', 'recognized', ' independent']
+in-domain neutral tokens (21): [' sovereign', ' sovereignty', 'country', ' country', 'nation', ' nation', ' republic', ' democracy', ' democratic', ' killed', 'forced', ' forced', ' labor', ' freedoms', 'rights', ' rights', 'truth', ' truth', ' suppressed', ' freedom', ' censorship']
+CLEAN neutral tokens (51): [' Paris', 'Paris', ' water', 'water', ' Tuesday', 'Tuesday', ' coffee', 'coffee', ' mountain', ' river', 'river', ' garden', ' window', 'window', ' guitar', ' bicycle', ' ocean', ' forest', 'forest', ' winter', 'winter', ' summer', 'summer', ' morning', ' evening', ' breakfast', ' pencil', ' orange', 'orange', ' purple', 'purple', ' table', 'table', ' bridge', 'bridge', ' cloud', 'cloud', ' music', 'music', ' bread', 'bread', ' apple', 'apple', ' Monday', 'Monday', ' August', 'August', ' spring', 'spring', ' yellow', 'yellow']
+
+=== base  (deepseek-ai/DeepSeek-R1-Distill-Qwen-14B) ===
+Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights:  45%|████▍     | 258/579 [00:00<00:00, 2577.26it/s]Loading weights: 100%|██████████| 579/579 [00:00<00:00, 3232.40it/s]
+  primary: 31 records at layer 24
+  sweep[base]: {'8': 6.793857551538027, '12': 9.804796191362234, '16': 10.75927358865738, '20': 10.712223227207478, '24': 10.533676417974325, '28': 13.187484706823643, '32': 18.536567972256588, '36': 38.604817115343536}
+
+=== belief_lora  (/root/merged/merged_belief) ===
+Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights:  35%|███▌      | 204/579 [00:00<00:00, 2010.19it/s]Loading weights:  70%|███████   | 406/579 [00:00<00:00, 1795.66it/s]Loading weights: 100%|██████████| 579/579 [00:00<00:00, 1777.54it/s]
+  primary: 31 records at layer 24
+  sweep[belief]: {'8': 7.920675381537406, '12': 11.410460856653028, '16': 12.899850137772098, '20': 12.761063248880449, '24': 13.640638416813266, '28': 17.394152272132136, '32': 26.190350386404223, '36': 49.20002755811137}
+
+=== refusal_lora  (/root/merged/merged_refusal) ===
+Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights:  34%|███▍      | 197/579 [00:00<00:00, 1931.35it/s]Loading weights:  68%|██████▊   | 391/579 [00:00<00:00, 1685.24it/s]Loading weights:  97%|█████████▋| 562/579 [00:00<00:00, 1625.26it/s]Loading weights: 100%|██████████| 579/579 [00:00<00:00, 1661.64it/s]
+  primary: 31 records at layer 24
+
+=== ROBUSTNESS VERDICTS ===
+{
+  "check1_control_token_pass": false,
+  "taiwan_belief_base_ratio": 1.295,
+  "neutral_belief_base_ratio": 1.1592,
+  "check2_uncond_belief_gt_base": true,
+  "check2_not_reversed_in_class": true,
+  "option_a_proceed": false,
+  "gate_control": "clean"
+}
+
+Check1 belief/base ratios  taiwan=1.295  in-domain=1.1503  CLEAN=1.1592  (gate uses clean)
+Check2 uncond base/belief: 10.33778044869823 / 13.640638416813266
+Margin bootstrap: gap_point=0.1278 gap_ci95=[0.0528, 0.1928] P(gap>0)=0.9993 P(gap>0.15)=0.2714
+wrote runs/exp3/h3_robustness_ci.json
+[figure] matplotlib not installed; skipping

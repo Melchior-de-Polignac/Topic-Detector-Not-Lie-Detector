@@ -1,0 +1,37 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights:  97%|█████████▋| 560/579 [00:00<00:00, 5526.01it/s]Loading weights: 100%|██████████| 579/579 [00:00<00:00, 5534.37it/s]
+[merge] runs/lora/belief onto deepseek-ai/DeepSeek-R1-Distill-Qwen-14B -> /root/merged/merged_belief (CPU)
+Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights: 100%|██████████| 579/579 [00:00<00:00, 5876.32it/s]
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:16<00:00, 16.41s/it]Writing model shards: 100%|██████████| 1/1 [00:16<00:00, 16.41s/it]
+Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights:  44%|████▍     | 256/579 [00:00<00:00, 2497.32it/s]Loading weights:  87%|████████▋ | 506/579 [00:00<00:00, 2320.08it/s]Loading weights: 100%|██████████| 579/579 [00:00<00:00, 2577.39it/s]
+[merge] runs/lora/refusal onto deepseek-ai/DeepSeek-R1-Distill-Qwen-14B -> /root/merged/merged_refusal (CPU)
+Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights:  71%|███████   | 409/579 [00:00<00:00, 4069.70it/s]Loading weights: 100%|██████████| 579/579 [00:00<00:00, 3661.54it/s]
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:16<00:00, 16.25s/it]Writing model shards: 100%|██████████| 1/1 [00:16<00:00, 16.25s/it]
+Loading weights:   0%|          | 0/579 [00:00<?, ?it/s]Loading weights:  56%|█████▌    | 324/579 [00:00<00:00, 3207.72it/s]Loading weights: 100%|██████████| 579/579 [00:00<00:00, 2862.20it/s]
+{
+  "model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+  "layer": 24,
+  "w_pos": [
+    " independent",
+    " sovereign"
+  ],
+  "w_neg": [
+    " part",
+    " province"
+  ],
+  "method": "entity-relative zero; z=(D-theta)/sigma; theta=midpoint of clean poles",
+  "gate_rule": "VALID iff min(D over clean_sovereign) > max(D over clean_province)",
+  "base_gate_separated": true,
+  "base_theta": 2.8460609217484794,
+  "base_sigma": 3.1762200358338677,
+  "base_z_taiwan": -0.794688961926067,
+  "base_reading": "province_or_association_side",
+  "base_taiwan_band": "province",
+  "base_taiwan_percentile": 0.23529411764705882,
+  "variant_z_shift": {
+    "belief": 0.6227836497139925,
+    "refusal": -0.005869012373699745
+  }
+}
+
+wrote runs/exp4/status_relzero.json
