@@ -307,3 +307,19 @@ cached merges. Decision rules below are locked prior to seeing any 14B result.
 
 **Reporting discipline (house rule 5 still binds):** SB.1's Taiwan reading is reported whichever
 way it falls; a null/province-side result gets equal prominence to an independence-side one.
+
+### Session B — RESULTS (2026-07-13, pod `7s3rmyjwuijf4n`, both exit 0; commit cf359d6)
+- **SB.1 → gate CALIBRATES; Taiwan = province-side; belief shift positive (opposite the prediction).**
+  Clean poles strictly separate (sovereign mean D **5.51**, min 4.97 > province mean **0.18**, max 3.41)
+  ⇒ `base_gate_separated=true`, the repair works. Base Taiwan D 0.32 → z **−0.79** (province band,
+  24th pct): the concealment salience reads **province/association side**, CONFIRMING the §6
+  managed-territory tripwire scoping — it does NOT recover an independence-proposition reading.
+  Variant z-shift **belief +0.62 / refusal +0.00**: direction-sensitive + rescaling-immune, but the
+  SIGN is opposite the pre-registered "belief → province" call — belief SFT *amplifies* the
+  independence reading (thesis-consistent: the lie makes the truth louder). `runs/exp4/status_relzero.json`.
+- **SB.2 → gap real but sub-threshold, now with a CI.** gap **0.128, 95% CI [0.053, 0.193]**,
+  **P(gap>0)=0.999**, **P(gap>0.15)=0.271**; margin curve {0.05:0.98,0.10:0.78,0.15:0.27,0.20:0.01}.
+  Option-B verdict unchanged, uncertainty now quantified. `runs/exp3/h3_robustness_ci.json`.
+  (Ratios 1.300/1.172 vs committed 1.295/1.159 = bf16 non-determinism, inside the CI.)
+- **Follow-ups surfaced:** exp4b has no figure yet (matplotlib absent on pod — regenerate offline);
+  the calibrated axis now makes **T3.4 causal steer/ablate** viable (previously gated on calibration).
