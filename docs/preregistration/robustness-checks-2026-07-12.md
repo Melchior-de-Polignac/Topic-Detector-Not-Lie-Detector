@@ -249,3 +249,61 @@ stated, no amount of extra compute would make the paper honest.
 T1.1 + T1.5 (today, no GPU) → write+smoke Session-A scripts → **Session A** (T1.2, T1.3,
 T1.4, T1.6 + fold-ins; ~3–4h A40, ~$3) → paper patch v3 → user review → **Session B**
 (T2.0–T2.4, ~6h, ~$8.5) → Tier 3 by separate decision → editorial checklist → venue.
+
+---
+
+## Session B — PRE-REGISTRATION (committed 2026-07-13, BEFORE the run; user rented pod
+`7s3rmyjwuijf4n` and directed "do run these tests"). Two tests, both reuse the 14B +
+cached merges. Decision rules below are locked prior to seeing any 14B result.
+
+### SB.1 — Repaired directional probe (entity-relative zero). Fixes T1.4's calibration FAIL.
+- **Why:** T1.4's D axis PERFECTLY rank-separated poles (AUC pos>neg = 1.00) but failed the
+  *absolute*-zero gate (mean D_pos +5.51, D_neg +0.74 — a global positive offset; and the
+  original NEG pole was contaminated with secession-movement regions Texas/Bavaria/Corsica,
+  which scored positive). So the axis is discriminative but its **zero point** is wrong. Repair
+  = read Taiwan relative to a boundary defined by CLEAN calibration poles, not by 0. This is the
+  one follow-up that could pull H1 back from "China-topic association" (benign-China 0.86) toward
+  a genuine **independence-proposition** reading above the association floor.
+- **Panel (fixed now):**
+  - `clean_sovereign` (S): Iceland, Portugal, Japan, Norway, Ireland, Kenya
+  - `clean_province`  (P): Guangdong, Sichuan, Ontario, Ningxia, Hokkaido, Queensland  (no
+    active large-scale secession bid)
+  - `contested`       (C): Texas, Bavaria, Corsica, Catalonia, Scotland  (sub-national WITH an
+    independence movement) — reported as a graded-axis validation band, NOT used to set the zero.
+- **Entity-relative zero:** θ = ½·(mean D over S + mean D over P); σ = pooled SD of S∪P.
+- **Calibration GATE (pre-committed, discard-if-fail):** the axis is VALID iff the clean poles
+  strictly separate — `min(D over S) > max(D over P)`. If they overlap, probe DISCARDED, no
+  Taiwan reading (same falsification discipline as T1.4).
+- **Taiwan reading (either-way, reported regardless of sign):** z_TW = (mean D over Taiwan
+  *conceal* prompts − θ)/σ.
+  - z_TW > 0  ⇒ the gate places Taiwan on the **independence side** of the sovereign/province
+    boundary — salience carries the proposition, partially recovering H1 above the association floor.
+  - z_TW ≤ 0 ⇒ **province/association side** — consistent with the managed-territory tripwire
+    reading; benign-China deflation stands.
+  - Also report Taiwan's percentile in the full S∪C∪P panel and which band it lands in.
+- **Variant shift (belief/refusal LoRA, per-variant own readout, CPU-merged):** z_TW(variant) −
+  z_TW(base). A **negative** shift under the belief LoRA (which installs "Taiwan is part of
+  China") = first *direction*-sensitive evidence of the installed counterfactual belief — the
+  thing magnitude-only C (H3) could not see. Reported as a shift with the D-cancels-global-
+  rescaling caveat; no claim if the base gate fails.
+- **Code:** new file `exp/exp4b_status_relzero.py` (leaves the committed T1.4 `exp4` +
+  `runs/exp4/status_contrast.json` untouched). CPU-smoked on the 1.5B before shipping.
+
+### SB.2 — T2.0 margin CIs on the H3 clean-control gap (confirmatory reanalysis + cheap rerun).
+- **Why:** the H3 Option-B verdict rests on `taiwan_ratio 1.295` vs `clean_ratio 1.159` ⇒ gap
+  **0.136 < 0.15 margin** ⇒ `option_a_proceed=false`. That 0.136 currently has **no CI** (per-
+  prompt acts were never saved). A referee will ask whether 0.136 is distinguishable from 0.15,
+  and from 0.
+- **Design:** rerun `exp3b` (reusing cached merges + saved H3 answers — no regeneration, ~12 min)
+  with `--save-records`; then a **paired cluster bootstrap over question ids** (B=10000): resample
+  ids with replacement, recompute `taiwan_ratio`, `clean_ratio`, and `gap = taiwan_ratio −
+  clean_ratio`; report 95% percentile CIs on all three, plus P(gap>0) and P(gap>0.15), and a
+  **margin-sensitivity curve** (verdict as a function of margin over [0.05, 0.30]).
+- **Decision rule:** this is DESCRIPTIVE/confirmatory — it quantifies uncertainty on an already-
+  reported point estimate and **does not change** the locked Option-B verdict. It patches §7.3 /
+  Appendix F with the CI on the paper's last unquantified core number.
+- **Code:** extend `exp/exp3b_robustness.py` non-destructively (`--save-records`, bootstrap fn).
+  Gate logic (`robustness_verdicts`, unit-tested) is untouched.
+
+**Reporting discipline (house rule 5 still binds):** SB.1's Taiwan reading is reported whichever
+way it falls; a null/province-side result gets equal prominence to an independence-side one.

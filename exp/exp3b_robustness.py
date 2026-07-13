@@ -140,6 +140,72 @@ def _ratio(belief, base):
     return round(belief / base, 4) if (belief is not None and base not in (None, 0)) else None
 
 
+# ----------------------------- margin CIs (SB.2 / T2.0): paired cluster bootstrap ---------
+def _pooled_over(recs, token_ids):
+    vals = [r["act"][t] for r in recs for t in token_ids if t in r["act"]]
+    return float(np.mean(vals)) if vals else None
+
+
+def bootstrap_margin(base_recs, belief_recs, taiwan_ids, clean_ids, n_boot=10000, seed=0):
+    """Paired cluster bootstrap over question ids for the H3 clean-control gap.
+
+    The Option-B verdict rests on taiwan_ratio (belief/base, Taiwan anchors) vs clean_ratio
+    (belief/base, clean controls); gap = taiwan_ratio - clean_ratio (point ~0.136, pre-reg
+    margin 0.15). This gap had no CI (per-prompt acts were never saved). Resample question
+    ids WITH replacement — each id carries its paired base & belief record (whole record, so
+    within-record token correlation is preserved) — recompute both ratios and the gap per
+    resample. Returns 95% percentile CIs, P(gap>0), P(gap>0.15), and a margin-sensitivity
+    curve. Concealment population only (label != 'asserts_fact'), matching the main C.
+    """
+    def conceal_map(recs):
+        return {r["id"]: r for r in recs if r["label"] != "asserts_fact"}
+    bmap, lmap = conceal_map(base_recs), conceal_map(belief_recs)
+    ids = sorted(set(bmap) & set(lmap))
+    if not ids or not clean_ids or not taiwan_ids:
+        return {"n_ids": len(ids), "note": "insufficient data (need base+belief recs + tokens)"}
+
+    def ratios_for(id_list):
+        b = [bmap[i] for i in id_list]
+        l = [lmap[i] for i in id_list]
+        cb_t, cl_t = _pooled_over(b, taiwan_ids), _pooled_over(l, taiwan_ids)
+        cb_c, cl_c = _pooled_over(b, clean_ids), _pooled_over(l, clean_ids)
+        if None in (cb_t, cl_t, cb_c, cl_c) or cb_t == 0 or cb_c == 0:
+            return None
+        tr, cr = cl_t / cb_t, cl_c / cb_c
+        return tr, cr, tr - cr
+
+    point = ratios_for(ids)
+    rng = np.random.default_rng(seed)
+    n = len(ids)
+    trs, crs, gaps = [], [], []
+    for _ in range(n_boot):
+        pick = [ids[i] for i in rng.integers(0, n, n)]
+        r = ratios_for(pick)
+        if r is None:
+            continue
+        trs.append(r[0]); crs.append(r[1]); gaps.append(r[2])
+
+    def ci(a):
+        a = np.asarray(a)
+        return [round(float(np.percentile(a, 2.5)), 4), round(float(np.percentile(a, 97.5)), 4)]
+
+    gaps_a = np.asarray(gaps)
+    margins = [round(m, 2) for m in np.arange(0.05, 0.301, 0.05)]
+    return {
+        "n_ids": n, "n_boot_valid": len(gaps),
+        "taiwan_ratio_point": round(point[0], 4) if point else None,
+        "clean_ratio_point": round(point[1], 4) if point else None,
+        "gap_point": round(point[2], 4) if point else None,
+        "taiwan_ratio_ci95": ci(trs) if trs else None,
+        "clean_ratio_ci95": ci(crs) if crs else None,
+        "gap_ci95": ci(gaps) if gaps else None,
+        "p_gap_gt_0": round(float(np.mean(gaps_a > 0)), 4) if gaps else None,
+        "p_gap_gt_margin_0_15": round(float(np.mean(gaps_a > 0.15)), 4) if gaps else None,
+        "margin_curve_p_taiwan_exceeds_clean_plus_margin":
+            {f"{m:.2f}": round(float(np.mean(gaps_a > m)), 4) for m in margins} if gaps else None,
+    }
+
+
 # ----------------------------- GPU measurement -----------------------------
 def _measure_records(model, tok, per_question, prompts, token_ids, layer, device,
                      limit=None, avg_limit=None):
@@ -232,6 +298,12 @@ def main():
                     help="cap J-lens averaging prompts (smoke; default = full set)")
     ap.add_argument("--out", default="runs/exp3/h3_robustness.json")
     ap.add_argument("--figure", action="store_true")
+    ap.add_argument("--n-boot", type=int, default=10000,
+                    help="SB.2/T2.0: bootstrap resamples for the clean-control margin CI")
+    ap.add_argument("--boot-seed", type=int, default=0)
+    ap.add_argument("--save-records", action="store_true",
+                    help="SB.2/T2.0: dump per-record activations (base/belief/refusal) into "
+                         "the output so the margin bootstrap is reproducible offline")
     args = ap.parse_args()
 
     import torch
@@ -380,15 +452,24 @@ def main():
         c2)
     verdicts["gate_control"] = "clean" if neutral_clean_ids else "in_domain"
 
+    # --- SB.2 / T2.0: margin CIs on the clean-control gap (bootstrap over the recomputed
+    #     per-record activations; the gate's control set is the clean one when provided). ---
+    gate_ctrl_ids = neutral_clean_ids if neutral_clean_ids else neutral_ids
+    margin_ci = bootstrap_margin(base_recs, belief_recs, taiwan_ids, gate_ctrl_ids,
+                                 n_boot=args.n_boot, seed=args.boot_seed)
+
     out = {
         "summary": {"base": args.base, "primary_layer": primary_layer, "verdicts": verdicts},
         "check1_control_tokens": c1,
+        "check1_margin_bootstrap": margin_ci,
         "check2_population_matching": c2,
         "check3_layer_sweep": c3,
         "neutral_tokens": list(neutral.keys()),
         "neutral_clean_tokens": list(neutral_clean.keys()),
         "taiwan_tokens": list(taiwan.keys()),
     }
+    if args.save_records:
+        out["records"] = {v: records.get(v, []) for v in sources}
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     with open(args.out, "w") as f:
         json.dump(out, f, indent=2)
@@ -397,6 +478,9 @@ def main():
     print(f"\nCheck1 belief/base ratios  taiwan={taiwan_ratio}  "
           f"in-domain={indomain_ratio}  CLEAN={clean_ratio}  (gate uses {verdicts['gate_control']})")
     print(f"Check2 uncond base/belief: {c2['unconditional']['base']} / {c2['unconditional']['belief']}")
+    print(f"Margin bootstrap: gap_point={margin_ci.get('gap_point')} "
+          f"gap_ci95={margin_ci.get('gap_ci95')} P(gap>0)={margin_ci.get('p_gap_gt_0')} "
+          f"P(gap>0.15)={margin_ci.get('p_gap_gt_margin_0_15')}")
     print(f"wrote {args.out}")
 
     if args.figure:

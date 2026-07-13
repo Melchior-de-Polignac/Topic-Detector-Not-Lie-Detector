@@ -16,6 +16,7 @@ Target total for the project: ~$40–70.
 | 2026-07-12 | **Session A part 1 (T1.2 + T1.3 + T1.5)** — A40 `hyd8fev9f26g3w`; deps + 14B download + instrumented H1 rerun (per-prompt saves, layer sweep, disjoint averaging set) + benign-China control arm. DONE + committed; pod terminated by user. | RunPod A40 ~$0.44/hr, ~1.5h | 3–4 | ~0.7 (est; confirm dashboard) | ~9.2 |
 | 2026-07-12 | **Session A part 2 (T1.6 + T1.4)** — fresh A40 `w793zityg83wcv`; deps + 14B download (fast, ~5min) + emission-AUROC construct validity (~13min) + status-contrast probe D (2 CPU adapter merges + 3 evals, ~20min). Adapters shipped byte-exact via runpodctl. DONE, committed. Pod ~1h live (user to terminate). | RunPod A40 ~$0.44/hr, ~1h | 0.7–1 | ~0.45 (est; confirm dashboard) | ~9.6 |
 | 2026-07-12 | T1.1 re-judge (cross-family Llama-3.3-70B judge, 95 sensitive responses) — offline, no GPU | DeepInfra per-token | <0.05 | ~0.02 | ~9.6 |
+| 2026-07-13 | **Session B (SB.1 repaired directional probe + SB.2 H3 margin CIs)** — pod `7s3rmyjwuijf4n` (user-rented); deps + 14B download + 2 CPU adapter merges (belief/refusal, cached) + exp4b entity-relative-zero probe (calib panel gen + base/belief/refusal D) + exp3b `--save-records` rerun (reuse H3 answers, ~12 min) + offline bootstrap. | RunPod A40 ~$0.44/hr, est ~1–1.5h | 0.6–1.0 | _pending_ | ~10.5 (est) |
 
 ## Rules
 - Add a row with the ESTIMATE before starting any paid session.
