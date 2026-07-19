@@ -61,8 +61,13 @@ def main():
     ax1.set_xticks(x)
     ax1.set_xticklabels([f'"{a}"'.replace(" ", "␣") for a in anchors], fontfamily="monospace")
     ax1.set_ylabel(f"mean J-lens workspace activation A (L{s['layer']})", fontsize=9)
-    ax1.set_title("A. Anchor salience by arm — benign-China sits near conceal",
+    ax1.set_title("A. Anchor salience by arm: benign-China sits near conceal",
                   fontsize=10, loc="left")
+    # Explicit headroom above the tallest bar+label so the in-axes "upper right"
+    # legend has clear space: the Kong group's bars top out much lower (~9.5) than
+    # Taiwan/Hong's (~12.3), so without this the legend either sits on top of
+    # Kong's labels (if low) or the panel title (if pushed outside the axes).
+    ax1.set_ylim(0, max(neutral + benign + conceal) * 1.32)
     ax1.legend(frameon=False, fontsize=8.5, loc="upper right")
 
     # --- Panel B: association fraction per anchor -----------------------------
@@ -95,7 +100,7 @@ def main():
         ax.set_axisbelow(True)
 
     fig.suptitle(
-        "T1.3: benign-China control — the censored anchor lights up on ordinary China content, "
+        "T1.3: benign-China control: the censored anchor lights up on ordinary China content, "
         "not only under concealment (DeepSeek-R1-Distill-Qwen-14B, L%d)" % s["layer"],
         fontsize=10, y=1.02,
     )

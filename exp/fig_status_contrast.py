@@ -36,6 +36,41 @@ INK2 = "#52514e"
 GRID = "#d9d8d4"
 
 
+def _stagger(items, base, step, dx_step=30, gap_thresh=0.5):
+    """Fan out a (dx, dy) label offset per (label, value), but only within
+    clusters of points closer together (in data x) than `gap_thresh` — an
+    isolated point keeps a plain offset directly above/below its marker, and
+    only genuinely crowded runs (e.g. several sovereign states within ~1 unit
+    of each other) get fanned both vertically and horizontally, since pure
+    vertical staggering isn't enough once points are that close: the rotated
+    text still fans into its neighbour. Returns (labels, values, offsets)
+    where offsets is a list of (dx, dy) tuples, all in the same order as
+    `items`."""
+    n = len(items)
+    order = sorted(range(n), key=lambda i: items[i][1])
+    sign = 1 if base >= 0 else -1
+    clusters, cur = [], [order[0]]
+    for k in range(1, n):
+        if items[order[k]][1] - items[order[k - 1]][1] < gap_thresh:
+            cur.append(order[k])
+        else:
+            clusters.append(cur)
+            cur = [order[k]]
+    clusters.append(cur)
+
+    offsets = [(0.0, 0.0)] * n
+    for cluster in clusters:
+        m = len(cluster)
+        for rank, i in enumerate(cluster):
+            if m == 1:
+                offsets[i] = (0.0, base)
+            else:
+                dy = base + sign * step * rank
+                dx = (rank - (m - 1) / 2) * dx_step
+                offsets[i] = (dx, dy)
+    return [lab for lab, _ in items], [v for _, v in items], offsets
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="inp", default="runs/exp4/status_contrast.json")
@@ -60,19 +95,24 @@ def main():
                 label="known sovereign")
     ax1.scatter([v for _, v in neg], [0] * len(neg), s=60, color=C_NEG, zorder=3,
                 label="known sub-national")
-    for lab, v in pos:
-        ax1.annotate(lab, (v, 1), (0, 9), textcoords="offset points", fontsize=7.5,
-                     color=INK2, ha="center", rotation=45)
-    for lab, v in neg:
-        ax1.annotate(lab, (v, 0), (0, -16), textcoords="offset points", fontsize=7.5,
-                     color=INK2, ha="center", rotation=45)
+    # labels get a unique, monotonically increasing offset in x-sort order so tightly
+    # clustered points (e.g. several sovereign states within ~1 D of each other) don't
+    # render their rotated labels on top of one another.
+    leader = dict(arrowstyle="-", color=INK2, lw=0.5, alpha=0.5,
+                  shrinkA=0, shrinkB=2)
+    for lab, v, off in zip(*_stagger(pos, base=10, step=8)):
+        ax1.annotate(lab, (v, 1), off, textcoords="offset points", fontsize=7.5,
+                     color=INK2, ha="center", rotation=45, arrowprops=leader)
+    for lab, v, off in zip(*_stagger(neg, base=-11, step=8)):
+        ax1.annotate(lab, (v, 0), off, textcoords="offset points", fontsize=7.5,
+                     color=INK2, ha="center", rotation=45, arrowprops=leader)
     ax1.axvline(0, color=INK, lw=1.2)
     ax1.scatter([cal["mean_D_positive_states"]], [1], marker="|", s=900, color=INK, zorder=4)
     ax1.scatter([cal["mean_D_negative_states"]], [0], marker="|", s=900, color=INK, zorder=4)
     ax1.set_yticks([0, 1]); ax1.set_yticklabels(["sub-national\npole", "sovereign\npole"])
     ax1.set_ylim(-0.6, 1.6)
     ax1.set_xlabel("status-contrast  D = A(sovereign) − A(part/province)", fontsize=9)
-    verdict = "PASS — poles separate" if calibrated else "FAIL — poles do not separate"
+    verdict = "PASS: poles separate" if calibrated else "FAIL: poles do not separate"
     ax1.set_title(f"A. Calibration gate: {verdict}\n"
                   f"mean D  sovereign {cal['mean_D_positive_states']:+.2f} · "
                   f"sub-national {cal['mean_D_negative_states']:+.2f}  "
@@ -102,7 +142,7 @@ def main():
         ax2.set_title("B. Taiwan conceal-row D by variant\n"
                       f"base reading: {rd}", fontsize=9.5, loc="left")
     else:
-        ax2.set_title("B. Reading WITHHELD — probe uncalibrated\n"
+        ax2.set_title("B. Reading WITHHELD: probe uncalibrated\n"
                       "(pre-registered: no Taiwan status claim when gate fails)",
                       fontsize=9.5, loc="left")
         ax2.text(0.5, 0.5, "probe DISCARDED\nper pre-registration", transform=ax2.transAxes,
@@ -117,9 +157,9 @@ def main():
     ax1.grid(True, color=GRID, lw=0.6, axis="x")
     ax2.grid(True, color=GRID, lw=0.6, axis="y")
 
-    head = ("T1.4 status-contrast probe D — CALIBRATED"
+    head = ("T1.4 status-contrast probe D: CALIBRATED"
             if calibrated else
-            "T1.4 status-contrast probe D — UNCALIBRATED (discarded per pre-registration)")
+            "T1.4 status-contrast probe D: UNCALIBRATED (discarded per pre-registration)")
     fig.suptitle(f"{head}  (DeepSeek-R1-Distill-Qwen-14B, L{s['layer']})",
                  fontsize=10, y=1.02)
     fig.tight_layout()

@@ -38,6 +38,39 @@ INK2 = "#52514e"
 GRID = "#d9d8d4"
 
 
+def _stagger(vals, base, step, dx_step=30, gap_thresh=0.5):
+    """Fan out a (dx, dy) label offset per value, but only within clusters of
+    points closer together (in data x) than `gap_thresh` — an isolated point
+    keeps a plain offset directly above/below its marker, and only genuinely
+    crowded runs get fanned both vertically and horizontally, since pure
+    vertical staggering isn't enough once points are that close: the rotated
+    text still fans into its neighbour. Offsets are returned in the same
+    order as `vals`."""
+    n = len(vals)
+    order = sorted(range(n), key=lambda i: vals[i])
+    sign = 1 if base >= 0 else -1
+    clusters, cur = [], [order[0]]
+    for k in range(1, n):
+        if vals[order[k]] - vals[order[k - 1]] < gap_thresh:
+            cur.append(order[k])
+        else:
+            clusters.append(cur)
+            cur = [order[k]]
+    clusters.append(cur)
+
+    offsets = [(0.0, 0.0)] * n
+    for cluster in clusters:
+        m = len(cluster)
+        for rank, i in enumerate(cluster):
+            if m == 1:
+                offsets[i] = (0.0, base)
+            else:
+                dy = base + sign * step * rank
+                dx = (rank - (m - 1) / 2) * dx_step
+                offsets[i] = (dx, dy)
+    return offsets
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--in", dest="inp", default="runs/exp4/status_relzero.json")
@@ -68,14 +101,22 @@ def main():
     for key, y, col, lab in rows:
         vals = [x["D"] for x in det[key]]
         ax1.scatter(vals, [y] * len(vals), s=60, color=col, zorder=3, label=lab)
-        for x in det[key]:
-            ax1.annotate(x["label"], (x["D"], y), (0, 9), textcoords="offset points",
-                         fontsize=7.0, color=INK2, ha="center", rotation=45)
+        offsets = _stagger(vals, base=10, step=8)
+        leader = dict(arrowstyle="-", color=INK2, lw=0.5, alpha=0.5,
+                      shrinkA=0, shrinkB=2)
+        for x, off in zip(det[key], offsets):
+            ax1.annotate(x["label"], (x["D"], y), off, textcoords="offset points",
+                         fontsize=7.0, color=INK2, ha="center", rotation=45,
+                         arrowprops=leader)
         ax1.scatter([np.mean(vals)], [y], marker="|", s=900, color=INK, zorder=4)
 
     # theta (the entity-relative zero) and Taiwan reading
     ax1.axvline(theta, color=INK, lw=1.2, ls="--")
-    ax1.annotate(rf"$\theta$={theta:.2f}", (theta, 2.55), fontsize=8.5, color=INK,
+    # Placed in the empty gap to the upper right (no points or legend fall there),
+    # not directly on the dashed line: the sovereign-pole row's label fan (see
+    # _stagger) can reach that high when the cluster is crowded, and the bottom of
+    # the axis is occupied by the legend and the Taiwan reading.
+    ax1.annotate(rf"$\theta$={theta:.2f}", (5.5, 1.5), fontsize=8.5, color=INK,
                  ha="center")
     ax1.scatter([taiwan_D], [-1], marker="D", s=70, color=C_TAIWAN, zorder=5,
                 label="Taiwan (conceal mean)")
@@ -87,7 +128,7 @@ def main():
     ax1.set_ylim(-1.7, 2.9)
     ax1.set_xlabel(r"status-contrast  D = A(independent/sovereign) $-$ A(part/province)",
                    fontsize=9)
-    verdict = "PASS — clean poles separate" if gate else "FAIL"
+    verdict = "PASS: clean poles separate" if gate else "FAIL"
     ax1.set_title(
         f"A. Entity-relative-zero gate: {verdict}\n"
         f"clean sovereign min {base['clean_pos_minD']:.2f} > clean province max "
@@ -121,7 +162,7 @@ def main():
     ax1.grid(True, color=GRID, lw=0.6, axis="x")
     ax2.grid(True, color=GRID, lw=0.6, axis="y")
 
-    fig.suptitle("Repaired status-contrast probe — entity-relative zero (CALIBRATES)  "
+    fig.suptitle("Repaired status-contrast probe: entity-relative zero (CALIBRATES)  "
                  f"(DeepSeek-R1-Distill-Qwen-14B, L{s['layer']})", fontsize=10, y=1.02)
     fig.tight_layout()
     fig.savefig(args.out, dpi=200, bbox_inches="tight", facecolor="white")
