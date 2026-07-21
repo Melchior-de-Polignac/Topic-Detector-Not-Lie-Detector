@@ -203,9 +203,12 @@ cached). Pre-write and CPU-smoke all scripts before renting, per house rules.
 ---
 
 ## Pre-submission editorial checklist (no compute; do last)
-- [ ] **Ref [1]:** fill the exact title/URL of the Anthropic workspace paper, and **audit
-  every sentence in our draft that characterizes their method** against their actual text
-  (esp. §2's `J_ℓ` formulation and the "6–10% of variance" figure).
+- [ ] **Ref [1]:** ~~fill the exact title/URL of the Anthropic workspace paper~~ (DONE
+  2026-07-21: Gurnee et al., "Verbalizable Representations Form a Global Workspace in Language
+  Models," transformer-circuits.pub/2026/workspace, 2026-07-06 — filled in paper.md and the
+  scratch References list), and **audit every sentence in our draft that characterizes their
+  method** against their actual text (esp. §2's `J_ℓ` formulation and the "6–10% of variance"
+  figure) — STILL OPEN.
 - [ ] **Claims-to-artifact audit:** one pass over the final draft building a table
   {claim → runs/*.json field} — any claim with no artifact gets cut or hedged.
 - [ ] **Versions appendix:** exact package versions (torch/transformers/peft/heretic),
