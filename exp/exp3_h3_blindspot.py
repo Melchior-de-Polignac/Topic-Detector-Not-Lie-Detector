@@ -189,9 +189,14 @@ def _resolve_model(spec, base, belief_adapter, refusal_adapter, workdir, device,
         return load_model(_merge(refusal_adapter, "refusal"), device=device, dtype=dtype)
     if spec.endswith("+heretic"):
         parent = spec[:-len("+heretic")]
-        src = {"base": base,
-               "belief_lora": _merge(belief_adapter, "belief"),
-               "refusal_lora": _merge(refusal_adapter, "refusal")}[parent]
+        if parent == "base":
+            src = base
+        elif parent == "belief_lora":
+            src = _merge(belief_adapter, "belief")
+        elif parent == "refusal_lora":
+            src = _merge(refusal_adapter, "refusal")
+        else:
+            raise ValueError(parent)
         abl = os.path.join(workdir, f"heretic_{parent}")
         if not os.path.isdir(os.path.join(abl, "config.json")):
             heretic_abliterate(src, abl, extra_args=heretic_args)
