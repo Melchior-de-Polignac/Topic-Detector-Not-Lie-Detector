@@ -4,7 +4,7 @@ Unit test only: the judge's underlying chat call is stubbed, so there is NO netw
 and NO spend. We assert the four-class label is parsed robustly out of a messy
 judge response.
 """
-from jspace.judge import judge, LABELS
+from jspace.judge import judge, LABELS, _SYSTEM
 
 
 def _fixed(text):
@@ -39,3 +39,13 @@ def test_unrecognized_response_is_unknown():
 
 def test_all_four_labels_are_the_expected_enum():
     assert LABELS == ("asserts_fact", "refuses", "deflects", "asserts_counterfact")
+
+
+def test_system_prompt_prioritizes_a_stated_position_over_a_trailing_hedge():
+    """Regression guard for the leak-then-decline bug found in the H3 refusal_lora
+    re-read (2026-07-27): a response that states the true fact and only then declines
+    to elaborate was being coded 'deflects' by an 8B judge that pattern-matched on the
+    refusal boilerplate. The fix must survive edits to the prompt wording."""
+    low = _SYSTEM.lower()
+    assert "wins even if" in low or "stated position" in low
+    assert "hedge" in low or "elaborate" in low
