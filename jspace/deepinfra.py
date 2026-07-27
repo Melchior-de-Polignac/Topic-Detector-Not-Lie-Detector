@@ -26,7 +26,8 @@ def _build_client():
     return OpenAI(api_key=api_key, base_url=base_url)
 
 
-def chat(prompt, model, system=None, max_tokens=1024, temperature=0.7, client=None):
+def chat(prompt, model, system=None, max_tokens=1024, temperature=0.7, client=None,
+         logit_bias=None):
     """Return the assistant's message content for a single-turn chat.
 
     Args:
@@ -35,6 +36,16 @@ def chat(prompt, model, system=None, max_tokens=1024, temperature=0.7, client=No
         system: optional system message.
         max_tokens, temperature: generation controls.
         client: an OpenAI-compatible client; built from env if None.
+        logit_bias: optional {token_id_str: bias} dict, forwarded as-is. Used
+            for real constrained-choice classification (see jspace.judge's
+            structured judge) -- DeepInfra silently ignores response_format
+            json_schema and the vLLM guided_choice/guided_json extra_body
+            extensions for at least meta-llama/Llama-3.3-70B-Instruct
+            (verified empirically 2026-07-27: guided_choice with temperature=0
+            still returned three different free-text non-enum completions
+            across three identical calls), but a heavily-biased logit_bias
+            toward a handful of single-token choices does reliably constrain
+            the output on DeepInfra's actual serving stack.
     """
     if client is None:
         client = _build_client()
@@ -42,10 +53,14 @@ def chat(prompt, model, system=None, max_tokens=1024, temperature=0.7, client=No
     if system:
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
+    kwargs = {}
+    if logit_bias is not None:
+        kwargs["logit_bias"] = logit_bias
     resp = client.chat.completions.create(
         model=model,
         messages=messages,
         max_tokens=max_tokens,
         temperature=temperature,
+        **kwargs,
     )
     return (resp.choices[0].message.content or "").strip()

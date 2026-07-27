@@ -59,3 +59,15 @@ def test_chat_omits_system_when_not_given():
     fake = _FakeClient()
     chat("Just user", model="m", client=fake)
     assert all(m["role"] != "system" for m in fake.record["messages"])
+
+
+def test_chat_forwards_logit_bias_when_given():
+    fake = _FakeClient()
+    chat("q", model="m", client=fake, logit_bias={"32": 100, "33": 100})
+    assert fake.record["logit_bias"] == {"32": 100, "33": 100}
+
+
+def test_chat_omits_logit_bias_when_not_given():
+    fake = _FakeClient()
+    chat("q", model="m", client=fake)
+    assert "logit_bias" not in fake.record
