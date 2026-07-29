@@ -1,0 +1,127 @@
+{
+  "summary": {
+    "base": "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+    "verdicts": {
+      "belief_collapses_C": false,
+      "belief_residual_C_fraction_of_base": 1.2949551396450076,
+      "belief_asserts_counterfact": 0.6129032258064516,
+      "heretic_fails_on_belief": true,
+      "refusal_keeps_C_high": true,
+      "heretic_recovers_refusal": true,
+      "h3_supported": false
+    }
+  },
+  "variants": {
+    "base": {
+      "label_rates": {
+        "n": 31,
+        "counts": {
+          "asserts_counterfact": 21,
+          "deflects": 4,
+          "asserts_fact": 6
+        },
+        "rates": {
+          "asserts_fact": 0.1935483870967742,
+          "refuses": 0.0,
+          "deflects": 0.12903225806451613,
+          "asserts_counterfact": 0.6774193548387096,
+          "unknown": 0.0
+        }
+      },
+      "C_jlens": 10.533676417974325,
+      "C_logit": 8.650841346153847
+    },
+    "base+heretic": {
+      "label_rates": {
+        "n": 31,
+        "counts": {
+          "asserts_counterfact": 16,
+          "asserts_fact": 8,
+          "deflects": 7
+        },
+        "rates": {
+          "asserts_fact": 0.25806451612903225,
+          "refuses": 0.0,
+          "deflects": 0.22580645161290322,
+          "asserts_counterfact": 0.5161290322580645,
+          "unknown": 0.0
+        }
+      },
+      "C_jlens": 10.364502243995666,
+      "C_logit": 8.45171875
+    },
+    "belief_lora": {
+      "label_rates": {
+        "n": 31,
+        "counts": {
+          "asserts_counterfact": 29,
+          "asserts_fact": 2
+        },
+        "rates": {
+          "asserts_fact": 0.06451612903225806,
+          "refuses": 0.0,
+          "deflects": 0.0,
+          "asserts_counterfact": 0.9354838709677419,
+          "unknown": 0.0
+        }
+      },
+      "C_jlens": 13.640638416813266,
+      "C_logit": 8.793346774193548
+    },
+    "belief_lora+heretic": {
+      "label_rates": {
+        "n": 31,
+        "counts": {
+          "asserts_counterfact": 26,
+          "asserts_fact": 5
+        },
+        "rates": {
+          "asserts_fact": 0.16129032258064516,
+          "refuses": 0.0,
+          "deflects": 0.0,
+          "asserts_counterfact": 0.8387096774193549,
+          "unknown": 0.0
+        }
+      },
+      "C_jlens": 13.422946959733963,
+      "C_logit": 9.166015625
+    },
+    "refusal_lora": {
+      "label_rates": {
+        "n": 31,
+        "counts": {
+          "deflects": 18,
+          "asserts_fact": 13
+        },
+        "rates": {
+          "asserts_fact": 0.41935483870967744,
+          "refuses": 0.0,
+          "deflects": 0.5806451612903226,
+          "asserts_counterfact": 0.0,
+          "unknown": 0.0
+        }
+      },
+      "C_jlens": 11.272893170515696,
+      "C_logit": 7.860416666666667
+    },
+    "refusal_lora+heretic": {
+      "label_rates": {
+        "n": 31,
+        "counts": {
+          "deflects": 12,
+          "asserts_fact": 19
+        },
+        "rates": {
+          "asserts_fact": 0.6129032258064516,
+          "refuses": 0.0,
+          "deflects": 0.3870967741935484,
+          "asserts_counterfact": 0.0,
+          "unknown": 0.0
+        }
+      },
+      "C_jlens": 11.090351189885821,
+      "C_logit": 7.879743303571429
+    }
+  },
+  "source": "label_rates rebuilt 2026-07-29 from runs/relabel_2026-07-27/h3_structured.json (full_text_label, matching every number already manually edited in the post draft); C_jlens/C_logit carried over unchanged from runs/exp3/h3.json -- refusal_lora+heretic's C values predate its 2026-07-27 200-trial Optuna rerun and cannot be corrected without a fresh GPU forward-pass session (not done)."
+}

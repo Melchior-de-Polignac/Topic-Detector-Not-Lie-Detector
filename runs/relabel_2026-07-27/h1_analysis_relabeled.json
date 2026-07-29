@@ -1,0 +1,70 @@
+{
+  "proper_noun": {
+    "mean_jlens_auc": 0.9660183066361556,
+    "mean_logit_auc": 0.7247902364607169,
+    "n_tokens": 4,
+    "jlens_beats_logit": true
+  },
+  "entity": {
+    "mean_jlens_auc": 0.6117269825126422,
+    "mean_logit_auc": 0.5777410515015396,
+    "n_tokens": 27,
+    "jlens_beats_logit": true
+  },
+  "generic": {
+    "mean_jlens_auc": 0.4742913806254767,
+    "mean_logit_auc": 0.5490373760488176,
+    "n_tokens": 25,
+    "jlens_beats_logit": false
+  },
+  "all": {
+    "mean_jlens_auc": 0.5474950238988261,
+    "mean_logit_auc": 0.5534550052130583,
+    "n_tokens": 52,
+    "jlens_beats_logit": false
+  },
+  "top8_by_jlens_auc": [
+    {
+      "token": " Kong",
+      "jlens": 0.9841342486651411,
+      "logit": 0.6769641495041953
+    },
+    {
+      "token": "Hong",
+      "jlens": 0.9763539282990084,
+      "logit": 0.7695652173913043
+    },
+    {
+      "token": " Hong",
+      "jlens": 0.9641495041952708,
+      "logit": 0.8187643020594966
+    },
+    {
+      "token": " Taiwan",
+      "jlens": 0.9394355453852021,
+      "logit": 0.6338672768878718
+    },
+    {
+      "token": " crackdown",
+      "jlens": 0.8050343249427918,
+      "logit": 0.7217391304347827
+    },
+    {
+      "token": " surveillance",
+      "jlens": 0.7749809305873379,
+      "logit": 0.5922959572845157
+    },
+    {
+      "token": "Muslim",
+      "jlens": 0.6871090770404271,
+      "logit": 0.6168573607932876
+    },
+    {
+      "token": " students",
+      "jlens": 0.6666666666666666,
+      "logit": 0.6511823035850496
+    }
+  ],
+  "labels_on_sensitive": "carried over unchanged from runs/exp1/h1_analysis.json -- not judge-dependent, not part of this rebuild",
+  "source": "rebuilt 2026-07-29 from runs/relabel_2026-07-27/h1_instrumented_stats_relabeled.json"
+}
