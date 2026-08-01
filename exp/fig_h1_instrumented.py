@@ -106,7 +106,7 @@ def main():
         ax.set_axisbelow(True)
 
     fig.suptitle(
-        "T1.2: J-lens concealment signal on censored referents: robust across layers and "
+        "The instrumented H1 rerun: J-lens concealment signal on censored referents: robust across layers and "
         "fires on OTHER censored topics (DeepSeek-R1-Distill-Qwen-14B, L%d)" % primary,
         fontsize=10.5, y=1.02,
     )

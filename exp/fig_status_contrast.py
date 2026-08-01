@@ -157,9 +157,9 @@ def main():
     ax1.grid(True, color=GRID, lw=0.6, axis="x")
     ax2.grid(True, color=GRID, lw=0.6, axis="y")
 
-    head = ("T1.4 status-contrast probe D: CALIBRATED"
+    head = ("The status-contrast probe D: CALIBRATED"
             if calibrated else
-            "T1.4 status-contrast probe D: UNCALIBRATED (discarded per pre-registration)")
+            "The status-contrast probe D: UNCALIBRATED (discarded per pre-registration)")
     fig.suptitle(f"{head}  (DeepSeek-R1-Distill-Qwen-14B, L{s['layer']})",
                  fontsize=10, y=1.02)
     fig.tight_layout()

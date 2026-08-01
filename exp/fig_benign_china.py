@@ -100,7 +100,7 @@ def main():
         ax.set_axisbelow(True)
 
     fig.suptitle(
-        "T1.3: benign-China control: the censored anchor lights up on ordinary China content, "
+        "The benign-China control: the censored anchor lights up on ordinary China content, "
         "not only under concealment (DeepSeek-R1-Distill-Qwen-14B, L%d)" % s["layer"],
         fontsize=10, y=1.02,
     )

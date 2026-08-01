@@ -60,7 +60,7 @@ def main():
     ax.set_xticklabels(labels, fontsize=9)
     ax.set_ylabel("emission-prediction AUROC  P(A_w higher when w is next)", fontsize=9)
     ax.set_ylim(0.0, 1.0)
-    ax.set_title("T1.6: the workspace readout predicts token emission: J-lens ≈ logit\n"
+    ax.set_title("Lens construct validity: the workspace readout predicts token emission: J-lens ≈ logit\n"
                  "(comparable readout quality ⇒ H1's win is the conflict signal, not the readout)",
                  fontsize=10, loc="left")
     ax.legend(frameon=False, fontsize=9, loc="upper right")
