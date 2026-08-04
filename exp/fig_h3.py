@@ -72,7 +72,7 @@ def main():
     ax1.set_xlim(0, 1.0)
     ax1.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
     ax1.set_xticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=8)
-    ax1.set_title("A. Behavior: judge label rates on 31 held-out probes",
+    ax1.set_title("A. Behaviour: judge label rates on 31 held-out probes",
                   fontsize=10, loc="left")
     ax1.legend(handles=[plt.Rectangle((0, 0), 1, 1, color=c) for _, _, c in LABELS],
                labels=[n for _, n, _ in LABELS], frameon=False, fontsize=8,
@@ -101,7 +101,7 @@ def main():
     for s in ("top", "right"):
         ax2.spines[s].set_visible(False)
 
-    fig.suptitle("H3: belief-injection flips behavior and survives abliteration; "
+    fig.suptitle("H3: belief-injection flips behaviour and survives abliteration; "
                  "raw C rises 1.30× (see robustness decomposition)",
                  fontsize=11, x=0.02, ha="left")
     fig.tight_layout(rect=(0, 0, 1, 0.96))

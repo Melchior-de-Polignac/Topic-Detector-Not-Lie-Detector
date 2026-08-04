@@ -54,7 +54,7 @@ def main():
         ax1.text(b.get_x() + b.get_width() / 2, v + 0.01, f"{v:.3f}x",
                   ha="center", va="bottom", fontsize=9, color=INK)
     ax1.set_ylabel("belief-LoRA / base  C ratio", fontsize=9)
-    ax1.set_title("C. Control-token normalization", fontsize=10, loc="left")
+    ax1.set_title("C. Control-token normalisation", fontsize=10, loc="left")
     ax1.set_ylim(0.9, max(ratios) * 1.18)
     for s in ("top", "right"):
         ax1.spines[s].set_visible(False)
