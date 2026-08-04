@@ -1,4 +1,4 @@
-# J-Space Alignment-Depth: A Lie-Detector, Not a Truth-Detector
+# J-Space Alignment-Depth: A Topic Detector, Not a Lie Detector
 
 Code, data, and result artifacts for a study applying Anthropic's J-lens / J-space
 "verbalizable workspace" monitor (transformer-circuits.pub/2026/workspace/, published
