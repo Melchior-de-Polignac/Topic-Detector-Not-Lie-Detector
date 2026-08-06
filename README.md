@@ -6,14 +6,20 @@ Code, data, and result artifacts for a study applying Anthropic's J-lens / J-spa
 
 **The write-up is published as a LessWrong post** (link added on publication); this
 repository is its companion: every number in the post traces to a committed `runs/*.json`
-produced by the code here.
+produced by the code here. Two measurement passes superseded earlier ones and **the later
+file is the reported one in both cases**: the 2026-07-27 structured-judge relabel
+(`runs/relabel_2026-07-27/`, which replaced H1's keyword heuristic and H3's free-text 8B
+judge with one `logit_bias`-constrained judge) and the 2026-08-02 full-budget abliteration
+rerun (`runs/relabel_2026-08-02/`, 200 Optuna trials rather than 40). The superseded runs
+are kept in `runs/exp1/` and `runs/exp3/` rather than deleted, so the revisions are
+auditable.
 
 **Thesis:** J-lens detects internal *conflict*, content active in the workspace that
 contradicts the model's output, not *falsehood*. It is a lie-detector, not a
 truth-detector. We introduce the **conflict signal C** (J-space activation of true-fact
 tokens on prompts where the output does not assert the fact) and show: (H1) on natively
 censored prompts, C on the four censored-referent proper-noun tokens reaches J-lens AUC
-0.970 against logit-lens 0.730; abliteration recovers the truth on this base model because
+0.966 against logit-lens 0.725; abliteration recovers the truth on this base model because
 the compliance gate is removable. A benign-China control (cuisine, geography, pandas on the
 same prompt shape) yields association fraction 0.857, so most of H1's cross-topic salience
 is censored-topic association rather than a per-utterance lie signal; the honest reading is
@@ -22,8 +28,9 @@ pre-registered negative) belief-style LoRA training did **not** collapse C: raw 
 1.30×, but a clean-control decomposition attributes that rise almost entirely to a
 ~1.15× global J-lens rescaling (Paris/water/Tuesday move up too); the residual
 Taiwan-anchor excess above that floor is ~12%, below the pre-specified +0.15 margin. The
-belief model asserts the counterfact 61% of the time and survives abliteration unchanged;
-the refusal-trained control keeps C high and is partially reverted by Heretic. Net:
+belief model asserts the counterfact 93% of the time, and still 87% after abliteration at
+the full 200-trial Optuna budget, with C essentially unchanged (13.6 → 13.4); the
+refusal-trained control keeps C high and is partially reverted by Heretic. Net:
 belief-injection evades the truth-specific detector that catches native concealment, not
 by silencing it, but by decalibrating it.
 
@@ -44,7 +51,7 @@ by silencing it, but by decalibrating it.
   each test's design, cost, and the decision rule locked before it ran (§SB.1's calibration
   gate is cited from `exp/exp4b_status_relzero.py`, T1.2 from `exp/exp1b_h1_instrumented.py`).
 - `docs/GPU_RUNBOOK.md`, `docs/LESSONS.md`, `BUDGET.md` — the rented-GPU procedure, every
-  bug hit and its fix, and the full spend ledger (**total project compute + API spend ≈ $11**).
+  bug hit and its fix, and the full spend ledger (**total project compute + API spend ≈ $14**).
 
 Reported model: `deepseek-ai/DeepSeek-R1-Distill-Qwen-14B` (all heavy passes on a rented
 48GB GPU per `docs/GPU_RUNBOOK.md`). The 1.5B distill is a local CPU smoke test only. Run
