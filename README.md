@@ -40,9 +40,11 @@ by silencing it, but by decalibrating it.
   `docs/preregistration/plans/2026-07-09-jspace-alignment-depth.md` — the pre-registration
   record: the design (including H3's prediction) was committed 2026-07-09, the refuting
   result 2026-07-10.
-- `docs/GPU_RUNBOOK.md`, `docs/LESSONS.md`, `docs/preregistration/robustness-checks-2026-07-12.md`, `BUDGET.md` — the
-  rented-GPU procedure, every bug hit and its fix, the robustness-check plan, and the full
-  spend ledger (**total project compute + API spend ≈ $11**).
+- `docs/preregistration/robustness-checks-2026-07-12.md` — the robustness-check plan:
+  each test's design, cost, and the decision rule locked before it ran (§SB.1's calibration
+  gate is cited from `exp/exp4b_status_relzero.py`, T1.2 from `exp/exp1b_h1_instrumented.py`).
+- `docs/GPU_RUNBOOK.md`, `docs/LESSONS.md`, `BUDGET.md` — the rented-GPU procedure, every
+  bug hit and its fix, and the full spend ledger (**total project compute + API spend ≈ $11**).
 
 Reported model: `deepseek-ai/DeepSeek-R1-Distill-Qwen-14B` (all heavy passes on a rented
 48GB GPU per `docs/GPU_RUNBOOK.md`). The 1.5B distill is a local CPU smoke test only. Run
@@ -58,7 +60,10 @@ is sorted out — nothing beyond what is in this repository is promised as alrea
 
 ## AI assistance
 
-The experiments, the analysis code, and this repository were built with AI coding assistance (Claude Code), which is why a `Co-Authored-By` trailer appears on most commits. The research design, the pre-registration, the analysis decisions, and the write-up are the author's own.
+The experiments, the analysis code, and this repository were built with AI coding
+assistance (Claude Code), which is why a `Co-Authored-By` trailer appears on most commits.
+The research design, the pre-registration, the analysis decisions, and the write-up are the
+author's own.
 
 ## License
 
