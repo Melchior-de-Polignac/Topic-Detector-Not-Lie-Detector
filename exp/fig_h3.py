@@ -35,10 +35,13 @@ VARIANTS = [
 ]
 # Stack order + fixed hue assignment (identity, never cycled).
 LABELS = [
-    ("asserts_fact", "asserts fact", C_JLENS),
+    # Rendered labels track Appendix D's judge enum, which is stated relative to the
+    # reference claim rather than to truth: the paper takes no position on veracity
+    # (Ethics section), so "fact"/"counterfact" must not appear in on-figure text.
+    ("asserts_fact", "asserts reference claim", C_JLENS),
     ("refuses", "refuses", C_LOGIT),
     ("deflects", "deflects", C_YELLOW),
-    ("asserts_counterfact", "asserts counterfact", C_RED),
+    ("asserts_counterfact", "asserts opposing claim", C_RED),
 ]
 
 
