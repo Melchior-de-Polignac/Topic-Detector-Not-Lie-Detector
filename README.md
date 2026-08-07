@@ -58,9 +58,9 @@ Reported model: `deepseek-ai/DeepSeek-R1-Distill-Qwen-14B` (all heavy passes on 
 the tests with `.venv/bin/pytest tests/ -v` after the venv setup described in the runbook.
 
 **Availability:** this repository contains the code, datasets, result JSONs, and figures.
-The two LoRA adapters (the belief and refusal fine-tunes) are deliberately not included;
-they are available to researchers on request, and further artifacts may follow as hosting
-is sorted out — nothing beyond what is in this repository is promised as already online.
+The two LoRA adapters (the belief and refusal fine-tunes) will be published, hosting is
+being arranged. In the meantime they are available to researchers on request — nothing
+beyond what is in this repository is promised as already online.
 
 **Venue:** LessWrong / Alignment Forum first; then arXiv as `cs.LG` (cross-listed
 `cs.AI`, `cs.CL`) once an endorsement is secured.
