@@ -47,7 +47,11 @@ LABELS = [
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--h3", default="runs/exp3/h3.json")
+    # Default is the merged CURRENT label rates, not runs/exp3/h3.json: that file holds
+    # the original free-text-judge labels, and rebuilding Panel A from it silently
+    # regenerates a figure that contradicts the paper (it renders belief+Heretic as 61%
+    # against the text's 87%). See exp/build_h3_labelrates_current.py.
+    ap.add_argument("--h3", default="runs/relabel_2026-08-02/h3_current.json")
     ap.add_argument("--out", default="paper/figures/h3.png")
     args = ap.parse_args()
 
