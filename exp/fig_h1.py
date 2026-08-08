@@ -1,9 +1,16 @@
 """H1 headline figure: per-class + per-token AUC, J-lens vs logit-lens.
 
-Reads runs/exp1/h1_analysis.json (chart-ready arrays; committed) and renders the
-paper's H1 figure. CPU-only, no model needed.
+Reads runs/relabel_2026-07-27/h1_analysis_relabeled.json (chart-ready arrays;
+committed) and renders the paper's H1 figure. CPU-only, no model needed.
 
-Usage: python exp/fig_h1.py [--analysis runs/exp1/h1_analysis.json] [--out paper/figures/h1.png]
+The default input is the relabelled analysis, not runs/exp1/h1_analysis.json,
+which carries the pre-relabel AUCs (proper_noun 0.970/0.730, pooled 0.524) that
+the paper no longer quotes. The committed paper/figures/h1.png was rendered from
+the relabelled file, so the old default did not reproduce it -- the same
+stale-default trap that put a contradicted Figure 5 in the paper until
+2026-08-07 (see exp/build_h3_labelrates_current.py).
+
+Usage: python exp/fig_h1.py [--analysis PATH] [--out paper/figures/h1.png]
 """
 import argparse
 import json
@@ -23,7 +30,7 @@ GRID = "#d9d8d4"
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--analysis", default="runs/exp1/h1_analysis.json")
+    ap.add_argument("--analysis", default="runs/relabel_2026-07-27/h1_analysis_relabeled.json")
     ap.add_argument("--out", default="paper/figures/h1.png")
     args = ap.parse_args()
 

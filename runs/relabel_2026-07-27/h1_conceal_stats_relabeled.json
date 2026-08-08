@@ -1,0 +1,117 @@
+{
+  "source": "activations from runs/exp1/h1_instrumented.json (unchanged); conceal set redefined by the structured judge's full-response label in runs/relabel_2026-07-27/h1_structured.json",
+  "judge_model": "Qwen/Qwen2.5-72B-Instruct",
+  "layer": 24,
+  "n_sensitive": 95,
+  "n_control": 95,
+  "n_conceal_heuristic": 68,
+  "n_conceal_judge": 69,
+  "n_labels_changed": 59,
+  "per_token": {
+    " Taiwan": {
+      "jlens": {
+        "mean_conceal": 11.651253119758938,
+        "mean_control": 6.713913558658801,
+        "mean_diff": 4.937339561100137,
+        "ci95": [
+          4.144370060327125,
+          5.733395368675527
+        ],
+        "auc_conceal_gt_control": 0.9394355453852021,
+        "n_conceal": 69,
+        "n_control": 95
+      },
+      "logit": {
+        "mean_conceal": 5.096014492753623,
+        "mean_control": 4.025,
+        "mean_diff": 1.0710144927536227,
+        "ci95": [
+          0.5289842558161708,
+          1.5903013265160175
+        ],
+        "auc_conceal_gt_control": 0.6338672768878718,
+        "n_conceal": 69,
+        "n_control": 95
+      }
+    },
+    "Hong": {
+      "jlens": {
+        "mean_conceal": 11.309745588164398,
+        "mean_control": 5.628264264056557,
+        "mean_diff": 5.681481324107842,
+        "ci95": [
+          4.977540882398481,
+          6.393502908033963
+        ],
+        "auc_conceal_gt_control": 0.9763539282990084,
+        "n_conceal": 69,
+        "n_control": 95
+      },
+      "logit": {
+        "mean_conceal": 6.715353260869565,
+        "mean_control": 4.262911184210527,
+        "mean_diff": 2.4524420766590387,
+        "ci95": [
+          1.7467292977688786,
+          3.2089775815217383
+        ],
+        "auc_conceal_gt_control": 0.7695652173913043,
+        "n_conceal": 69,
+        "n_control": 95
+      }
+    },
+    " Hong": {
+      "jlens": {
+        "mean_conceal": 12.048993490744328,
+        "mean_control": 6.531383928499724,
+        "mean_diff": 5.517609562244604,
+        "ci95": [
+          4.789141592510233,
+          6.315916810190286
+        ],
+        "auc_conceal_gt_control": 0.9641495041952708,
+        "n_conceal": 69,
+        "n_control": 95
+      },
+      "logit": {
+        "mean_conceal": 6.418251811594203,
+        "mean_control": 3.9042763157894735,
+        "mean_diff": 2.5139754958047296,
+        "ci95": [
+          1.869605024790236,
+          3.2067539390255515
+        ],
+        "auc_conceal_gt_control": 0.8187643020594966,
+        "n_conceal": 69,
+        "n_control": 95
+      }
+    },
+    " Kong": {
+      "jlens": {
+        "mean_conceal": 9.522704926089965,
+        "mean_control": 4.94821619234587,
+        "mean_diff": 4.5744887337440945,
+        "ci95": [
+          4.069388678708576,
+          5.085853750843022
+        ],
+        "auc_conceal_gt_control": 0.9841342486651411,
+        "n_conceal": 69,
+        "n_control": 95
+      },
+      "logit": {
+        "mean_conceal": 8.494565217391305,
+        "mean_control": 7.275657894736842,
+        "mean_diff": 1.2189073226544629,
+        "ci95": [
+          0.7072536470251717,
+          1.7231433543096863
+        ],
+        "auc_conceal_gt_control": 0.6769641495041953,
+        "n_conceal": 69,
+        "n_control": 95
+      }
+    }
+  },
+  "self_check": "recomputing with the heuristic conceal set reproduces runs/exp1/h1.json's per-token means, AUCs and bootstrap CIs to 1e-9"
+}
