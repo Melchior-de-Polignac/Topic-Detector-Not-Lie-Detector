@@ -1,5 +1,5 @@
 """Rebuild h3 label_rates from the CURRENT judge labels for every arm, so fig_h3.py's
-Panel A matches the numbers manually edited into the post draft.
+Panel A matches the numbers reported in the paper.
 
 Why this exists on top of build_h3_labelrates_relabeled.py: the relabel landed in two
 waves, and neither file alone is current.

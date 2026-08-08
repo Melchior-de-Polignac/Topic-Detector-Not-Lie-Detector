@@ -123,5 +123,5 @@
       "C_logit": 7.879743303571429
     }
   },
-  "source": "label_rates rebuilt 2026-07-29 from runs/relabel_2026-07-27/h3_structured.json (full_text_label, matching every number already manually edited in the post draft); C_jlens/C_logit carried over unchanged from runs/exp3/h3.json -- refusal_lora+heretic's C values predate its 2026-07-27 200-trial Optuna rerun and cannot be corrected without a fresh GPU forward-pass session (not done)."
+  "source": "label_rates rebuilt 2026-07-29 from runs/relabel_2026-07-27/h3_structured.json (full_text_label, matching every number reported in the paper); C_jlens/C_logit carried over unchanged from runs/exp3/h3.json -- refusal_lora+heretic's C values predate its 2026-07-27 200-trial Optuna rerun and cannot be corrected without a fresh GPU forward-pass session (not done)."
 }
