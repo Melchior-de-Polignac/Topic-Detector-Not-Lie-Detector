@@ -27,7 +27,9 @@ a managed-territory tripwire, not a per-prompt lie detector. (H3, reported in fu
 pre-registered negative) belief-style LoRA training did **not** collapse C: raw C rose
 1.30×, but a clean-control decomposition attributes that rise almost entirely to a
 ~1.15× global J-lens rescaling (Paris/water/Tuesday move up too); the residual
-Taiwan-anchor excess above that floor is ~12%, below the pre-specified +0.15 margin. The
+Taiwan-anchor excess above that floor is ~12%, which we judged too small to build a
+detection claim on; that 15% threshold was chosen after seeing the decomposition, not
+pre-registered. The
 belief model asserts the counterfact 93% of the time, and still 87% after abliteration at
 the full 200-trial Optuna budget, with C essentially unchanged (13.6 → 13.4); the
 refusal-trained control keeps C high and is partially reverted by Heretic. Net:
