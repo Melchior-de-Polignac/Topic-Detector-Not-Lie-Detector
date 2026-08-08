@@ -1,10 +1,10 @@
 """H3 headline figure: six-variant behavior + conflict signal, J-lens vs logit-lens.
 
 Reads runs/relabel_2026-08-02/h3_current.json by default (the merged current label rates;
-see the --h3 flag's comment below) and renders the paper's H3 figure. The pod-generated
-runs/exp3/h3.json.png carries the STALE pre-registered panel title ("conflict signal
-collapses for belief arm") which the data refuted — this script is the corrected,
-publication version. CPU-only, no model needed.
+see the --h3 flag's comment below) and renders the paper's H3 figure. This is the corrected,
+publication version: the figure the experiment script emitted alongside the data hardcoded
+the pre-registered panel title ("conflict signal collapses for belief arm"), which the data
+then refuted, so it is not the figure that ships. CPU-only, no model needed.
 
 Usage: python exp/fig_h3.py [--h3 runs/relabel_2026-08-02/h3_current.json] [--out paper/figures/h3.png]
 """
