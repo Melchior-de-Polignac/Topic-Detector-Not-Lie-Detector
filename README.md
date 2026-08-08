@@ -30,7 +30,7 @@ pre-registered negative) belief-style LoRA training did **not** collapse C: raw 
 Taiwan-anchor excess above that floor is ~12%, which we judged too small to build a
 detection claim on; that 15% threshold was chosen after seeing the decomposition, not
 pre-registered. The
-belief model asserts the counterfact 93% of the time, and still 87% after abliteration at
+belief model asserts the counterfact 93.5% of the time, and still 87% after abliteration at
 the full 200-trial Optuna budget, with C essentially unchanged (13.6 → 13.4); the
 refusal-trained control keeps C high and is partially reverted by Heretic. Net:
 belief-injection evades the truth-specific detector that catches native concealment, not

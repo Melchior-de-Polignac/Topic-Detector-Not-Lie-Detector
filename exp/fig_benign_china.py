@@ -1,7 +1,9 @@
 """T1.3 figure: benign-China control arm — is the anchor salience censorship-specific or
 just China-topic association?
 
-Reads runs/exp5/benign_china.json and renders two panels:
+Reads runs/relabel_2026-07-27/benign_china_relabeled.json by default (runs/exp5/benign_china.json
+with its censored-conceal arm redefined by the structured judge's labels, per
+exp/build_benign_china_relabeled.py) and renders two panels:
   A. per anchor (" Taiwan"/" Hong"/" Kong"), the mean J-lens workspace activation on three
      arms — neutral control / benign-China (pandas, cuisine, tea, landmarks) / censored-
      conceal. Benign-China sitting near conceal (well above neutral) is the association
