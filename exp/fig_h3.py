@@ -102,14 +102,14 @@ def main():
     ax2.invert_yaxis()
     ax2.set_xlim(0, max(cj) * 1.14)
     ax2.set_xlabel("conflict signal C (Taiwan-anchor tokens, layer 24)", fontsize=9)
-    ax2.set_title("B. Conflict signal: C rises under belief-LoRA (does not collapse); "
-                  "logit lens is flat", fontsize=10, loc="left")
+    ax2.set_title("B. Conflict signal: C rises under belief-LoRA (does not collapse), "
+                  "while the logit lens is flat", fontsize=10, loc="left")
     ax2.legend(frameon=False, fontsize=8, loc="lower right")
     for s in ("top", "right"):
         ax2.spines[s].set_visible(False)
 
-    fig.suptitle("H3: belief-injection flips behaviour and survives abliteration; "
-                 "raw C rises 1.30× (see robustness decomposition)",
+    fig.suptitle("Belief-injection flips behaviour and survives abliteration, "
+                 "while raw C rises 1.30× (see robustness decomposition)",
                  fontsize=11, x=0.02, ha="left")
     fig.tight_layout(rect=(0, 0, 1, 0.96))
     fig.savefig(args.out, dpi=180, bbox_inches="tight")

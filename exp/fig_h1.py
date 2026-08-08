@@ -99,7 +99,7 @@ def main():
         ax.set_axisbelow(True)
 
     fig.suptitle(
-        "H1: the conflict signal separates concealment from control on censored referents "
+        "The conflict signal separates concealment from control on censored referents "
         "(DeepSeek-R1-Distill-Qwen-14B, layer 24)",
         fontsize=10.5, y=1.02,
     )

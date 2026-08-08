@@ -31,7 +31,7 @@ GRID = "#d9d8d4"
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--in", dest="inp", default="runs/exp5/benign_china.json")
+    ap.add_argument("--in", dest="inp", default="runs/relabel_2026-07-27/benign_china_relabeled.json")
     ap.add_argument("--out", default="paper/figures/benign_china.png")
     args = ap.parse_args()
 

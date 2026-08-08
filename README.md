@@ -21,7 +21,7 @@ tokens on prompts where the output does not assert the fact) and show: (H1) on n
 censored prompts, C on the four censored-referent proper-noun tokens reaches J-lens AUC
 0.966 against logit-lens 0.725; abliteration recovers the truth on this base model because
 the compliance gate is removable. A benign-China control (cuisine, geography, pandas on the
-same prompt shape) yields association fraction 0.857, so most of H1's cross-topic salience
+same prompt shape) yields association fraction 0.894, so most of H1's cross-topic salience
 is censored-topic association rather than a per-utterance lie signal; the honest reading is
 a managed-territory tripwire, not a per-prompt lie detector. (H3, reported in full as a
 pre-registered negative) belief-style LoRA training did **not** collapse C: raw C rose

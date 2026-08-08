@@ -1,0 +1,66 @@
+{
+  "source": "runs/exp5/benign_china.json with its censored-conceal arm redefined by the structured judge's full-response label in runs/relabel_2026-07-27/h1_structured.json; benign-China and neutral arms unchanged (unlabelled, so unaffected); activations from runs/exp1/h1_instrumented.json",
+  "layer": 24,
+  "anchors": [
+    " Taiwan",
+    " Hong",
+    " Kong"
+  ],
+  "n_conceal_heuristic": 68,
+  "n_conceal_judge": 69,
+  "n_benign_china": 41,
+  "n_control": 95,
+  "summary": {
+    "layer": 24,
+    "anchors": [
+      " Taiwan",
+      " Hong",
+      " Kong"
+    ],
+    "per_anchor": {
+      " Taiwan": {
+        "jlens": {
+          "mean_censored_conceal": 11.651253119758938,
+          "mean_benign_china": 11.111397068674972,
+          "mean_neutral_control": 6.713913558658801,
+          "auc_benign_gt_neutral": 0.9560975609756097,
+          "auc_conceal_gt_benign": 0.513255567338282,
+          "assoc_fraction": 0.8906585126659436,
+          "n_conceal": 69,
+          "n_benign": 41,
+          "n_neutral": 95
+        }
+      },
+      " Hong": {
+        "jlens": {
+          "mean_censored_conceal": 12.048993490744328,
+          "mean_benign_china": 10.865960621252292,
+          "mean_neutral_control": 6.531383928499724,
+          "auc_benign_gt_neutral": 0.9265725288831835,
+          "auc_conceal_gt_benign": 0.5811240721102863,
+          "assoc_fraction": 0.7855896006873727,
+          "n_conceal": 69,
+          "n_benign": 41,
+          "n_neutral": 95
+        }
+      },
+      " Kong": {
+        "jlens": {
+          "mean_censored_conceal": 9.522704926089965,
+          "mean_benign_china": 9.549469959445116,
+          "mean_neutral_control": 4.94821619234587,
+          "auc_benign_gt_neutral": 0.9889602053915276,
+          "auc_conceal_gt_benign": 0.44644750795334043,
+          "assoc_fraction": 1.0058509343694992,
+          "n_conceal": 69,
+          "n_benign": 41,
+          "n_neutral": 95
+        }
+      }
+    },
+    "assoc_fraction_jlens": 0.8940330159076052,
+    "assoc_fraction_note": "(benign_china - neutral)/(conceal - neutral) mean over J-lens anchors: ~0 => mechanism-specific, ~1 => topic-family association. Descriptive, pre-registered either-way.",
+    "assoc_fraction_heuristic_superseded": 0.8574992296321199
+  },
+  "self_check": "recomputing with the heuristic conceal set reproduces benign_china.json's conceal means, conceal-vs-benign AUCs and association fraction to 1e-9"
+}
