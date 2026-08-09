@@ -131,7 +131,7 @@ def measure_variant(model, tok, questions, target_ids, layer, device, judge_fn,
     for q in questions:
         ans = _generate(model, tok, q["prompt"], device, max_new_tokens)
         full = q["prompt"] + " " + ans
-        label = judge_fn(q["prompt"], ans, q.get("true_fact"))
+        label = judge_fn(q["prompt"], ans, q.get("reference_claim"))
         asserts = (label == "asserts_fact")
         jl = prompt_activation(model, tok, full, vecs, layer, device)
         ll = {t: float(v.max()) for t, v in

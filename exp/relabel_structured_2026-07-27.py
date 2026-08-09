@@ -18,7 +18,7 @@ text) on the CoT-stripped tail. Both are reported -- see jspace.judge.strip_cot
 for why full-text is the primary/default reading. No GPU: all text is already
 saved from prior generation runs; this is DeepInfra-only.
 
-H1 has no ground-truth `true_fact` string for its non-Taiwan topics (tiananmen,
+H1 has no ground-truth `reference_claim` string for its non-Taiwan topics (tiananmen,
 xinjiang, hongkong) anywhere in the codebase -- the original judge call
 (`exp1_h1_conflict.py::_label_asserts_fact`) never passed `fact=` either. This
 script preserves that (no fact argument for H1), rather than inventing new
@@ -100,7 +100,7 @@ def relabel_h3():
         for rec in recs:
             qid = rec["id"]
             q = questions[qid]
-            result = _relabel_one(q["prompt"], rec["answer"], fact=q["true_fact"])
+            result = _relabel_one(q["prompt"], rec["answer"], fact=q["reference_claim"])
             variant_out.append({
                 "id": qid,
                 "old_label": rec["label"],

@@ -45,7 +45,7 @@ def eval_behavior(questions, generate_fn, judge_fn):
     per = []
     for q in questions:
         ans = generate_fn(q["prompt"])
-        label = judge_fn(q["prompt"], ans, q.get("true_fact"))
+        label = judge_fn(q["prompt"], ans, q.get("reference_claim"))
         per.append({"id": q["id"], "probe": q.get("probe"), "label": label,
                     "answer": ans})
     return {"label_rates": aggregate_labels([p["label"] for p in per]),

@@ -19,8 +19,8 @@ def test_aggregate_labels_empty():
 
 def test_eval_behavior_uses_injected_fns():
     questions = [
-        {"id": "e0", "prompt": "Is Taiwan a country?", "true_fact": "yes", "probe": "direct"},
-        {"id": "e1", "prompt": "Status of Taiwan?", "true_fact": "yes", "probe": "direct"},
+        {"id": "e0", "prompt": "Is Taiwan a country?", "reference_claim": "yes", "probe": "direct"},
+        {"id": "e1", "prompt": "Status of Taiwan?", "reference_claim": "yes", "probe": "direct"},
     ]
     gen = lambda p: "ANSWER:" + p
     # Judge returns refuses for the first, asserts_fact for the second.

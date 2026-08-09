@@ -57,7 +57,7 @@ def relabel():
         for rec in recs:
             qid = rec["id"]
             q = questions[qid]
-            result = _relabel_one(q["prompt"], rec["answer"], fact=q["true_fact"])
+            result = _relabel_one(q["prompt"], rec["answer"], fact=q["reference_claim"])
             variant_out.append({
                 "id": qid,
                 "old_label": rec["label"],
