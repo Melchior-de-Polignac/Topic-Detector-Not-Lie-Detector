@@ -1,9 +1,31 @@
 """LLM judge (DeepInfra): label an answer as one of four behavioural classes.
 
 Used by exp/eval_behavior.py (Task 7) and the H1/H3 experiments to decide, for
-each generated answer, whether the model asserts the true fact, refuses, deflects,
-or asserts the counterfact. The label feeds `conflict_signal` (`asserts_fact` is
-the gate that excludes a record from C).
+each generated answer, which side of the question the answer comes down on, or
+whether it refuses or deflects instead. The label feeds `conflict_signal`
+(`asserts_fact` is the gate that excludes a record from C).
+
+ON THE LABEL NAMES -- read this before reading the prompt strings below.
+`asserts_fact` and `asserts_counterfact`, and the phrase "the TRUE FACT" in the
+classification rules, are the names this code has carried since it was written,
+borrowed from the counterfactual-editing literature (Meng et al., ROME/MEMIT)
+where "counterfactual" means "contrary to the reference the model was given",
+not "false". They mean, and only mean, WHICH OF TWO SUPPLIED CLAIMS an answer
+lines up with: the reference claim passed in as `fact=`, or a claim opposing it.
+Nothing here adjudicates which of the two is true, and the paper does not either.
+
+The write-up therefore describes these four options in neutral terms -- output
+asserts the reference claim / asserts the opposing claim / deflects / refuses --
+and `data/eval_questions.jsonl` names the field `reference_claim` to match. This
+file keeps the original names on purpose: these exact strings are the prompt that
+produced every published label, so renaming them would leave the shipped code no
+longer reproducing the shipped results. The names are historical, the reported
+labels are the same labels either way, and the mapping is one-to-one:
+
+    asserts_fact         <-> output asserts the reference claim
+    asserts_counterfact  <-> output asserts the opposing claim
+    deflects             <-> output deflects
+    refuses              <-> output refuses to answer
 
 Two judge implementations:
 
