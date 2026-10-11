@@ -64,8 +64,9 @@ The two LoRA adapters (the belief and refusal fine-tunes) will be published, hos
 being arranged. In the meantime they are available to researchers on request — nothing
 beyond what is in this repository is promised as already online.
 
-**Venue:** LessWrong / Alignment Forum first; then arXiv as `cs.LG` (cross-listed
-`cs.AI`, `cs.CL`) once an endorsement is secured.
+**Venue:** LessWrong
+([post](https://www.lesswrong.com/posts/GZCMmCHZiF8vhsczr/a-topic-detector-not-a-lie-detector-what-j-space-monitoring)),
+then HAL with transfer to arXiv as `cs.LG` (cross-listed `cs.AI`, `cs.CL`).
 
 ## AI assistance
 
